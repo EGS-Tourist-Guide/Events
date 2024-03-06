@@ -1,0 +1,352 @@
+#----------VERSION------------#  
+openapi: 3.0.0
+
+#-----------SERVER------------#  
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LuisCouto/EventsAPI/1.0.0
+
+
+#------------INFO-------------#  
+info:
+  description: API that exposes endpoints for an event managing service
+  version: "1.0.0"
+  title: Event Service API
+  contact:
+    name: Luís Couto
+    email: luiscouto10@ua.pt
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  
+  
+#------------TAGS-------------#  
+tags:
+  - name: clients
+    description: Operations available to service clients
+    
+    
+#----------SECURITY-----------#
+security:
+  - ApiKeyAuth: []
+  
+  
+#------------PATHS------------#
+paths:
+  /v1:
+    get:
+      tags:
+        - clients
+      summary: get all events
+      operationId: getEvents
+      description: You can optimize the search for events by passing in the appropriate query parameters
+      parameters:
+        - name: limit
+          in: query
+          description: maximum number of events to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 25
+            minimum: 25
+            maximum: 50
+        - name: offset
+          in: query
+          description: number of events to skip for pagination
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: searchString 
+          in: query
+          description: pass a generic search string, system will try match it with name, organizer and category
+          required: false
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: name of the event
+          required: false
+          schema:
+            type: string
+        - name: organizer
+          in: query
+          description: name of the event organizer
+          required: false
+          schema:
+            type: string
+        - name: city
+          in: query
+          description: name of the city where the event is taking place
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: category of the event
+          required: false
+          schema:
+            type: string  
+        - name: startdate
+          in: query
+          description: events that start at this date
+          required: false
+          schema:
+            type: string
+            format: date-time  
+        - name: maxprice
+          in: query
+          description: maximum price of the event
+          required: false
+          schema:
+            type: string
+            pattern: '^(EUR|USD|GBP)\d+\.\d{2}$' 
+        - name: minprice
+          in: query
+          description: minimum price of the event
+          required: false
+          schema:
+            type: string
+            pattern: '^(EUR|USD|GBP)\d+\.\d{2}$' 
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
+        '404':
+          $ref: "#/components/responses/404"
+          
+    post:
+      tags:
+        - clients
+      summary: create an event
+      operationId: createEvent
+      description: Creates a new event
+      responses:
+        '200':
+          description: The event has been successfully created 
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
+        '409':
+          description: An event with equal information already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        description: Event data to create
+        
+  /v1/{uuid}:
+  
+    get:
+      tags:
+        - clients
+      summary: get a specific event
+      operationId: getEvent
+      description: Fetches an event with the given UUID
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the event to fetch
+          required: true
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
+        '404':
+          $ref: "#/components/responses/404"
+          
+    put:
+      tags:
+        - clients
+      summary: update a specific event
+      operationId: updateEvent
+      description: Updates an event with the given UUID
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the event to update
+          required: true
+      responses:
+        '200':
+          description: The event has been successfully updated 
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
+        '404':
+          $ref: "#/components/responses/404"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        description: Event data to update
+        
+    delete:
+      tags:
+        - clients
+      summary: delete a specific event
+      operationId: deleteEvent
+      description: Deletes an event with the given UUID
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the event to delete
+          required: true
+      responses:
+        '204':
+          description: The event has been successfully deleted 
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
+        '404':
+          $ref: "#/components/responses/404"
+
+
+#----------COMPONENTS---------#
+components:
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: SERVICE-API-KEY
+      
+  responses:
+    400:
+      description: Bad request. Check if request and data are valid and correctly formatted
+    401:
+      description: The API key is missing or invalid
+      headers:
+        WWW_Authenticate:
+          description: API Key
+          schema:
+            type: string
+    404:
+      description: An event with the specified UUID and/or query parameters was not found
+    
+  schemas:
+    Event:
+      type: object
+      required:
+        - uuid
+        - name
+        - organizer
+        - street
+        - doorNumber
+        - postCode
+        - city
+        - country
+        - contact
+        - category
+        - startDate
+        - endDate
+        - about
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          example: Dérbi Lisboa
+        organizer:
+          type: string
+          example: Federação Portuguesa de Futebol
+        street:
+          type: string
+          example: Rua Professor Fernando da Fonseca
+        doorNumber:
+          type: string
+          pattern: '^N\d+$'
+          example: N30
+        postCode:
+          type: string
+          example: 1501-806
+        city:
+          type: string
+          example: Lisboa
+        country:  
+          type: string
+          example: Portugal
+        contact:
+          type: string
+          format: email
+          example: eventSupport@gmail.com
+        category:
+          type: string
+          enum: [Business, Conference, Culture, Networking, Technology, Sports, Wellness, Workshop]
+          example: 'Sports'
+        startDate:
+          type: string
+          format: date-time
+          example: '2024-04-07T20:00:00.001Z'
+        endDate:
+          type: string
+          format: date-time
+          example: '2024-04-07T22:00:00.001Z'
+        about:
+          type: string
+          example: Sporting vs Benfica, o jogo da época  
+        price:
+          type: string
+          nullable: true
+          pattern: '^(EUR|USD|GBP)\d+\.\d{2}$'
+          example: 'EUR25.55'
+        pointOfInterest:
+          type: string
+          nullable: true
+          example: Estádio José Alvalade
+        maxCapacity:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 1
+          example: 50049
+        availableCapacity:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          example: 25000
+        favorites:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          example: 130
+        thumbnail:
+          type: string
+          format: binary
+          nullable: true
+          example:

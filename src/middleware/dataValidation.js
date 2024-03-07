@@ -59,8 +59,8 @@ const isValidString = (description) => {
     return description.trim().length > 0;
 };
 
-// Export functions
-module.exports = {
+// Export the validation functions
+const dataValidator = {
     isValidUUID,
     isValidEmail,
     isValidDate,
@@ -69,3 +69,4 @@ module.exports = {
     isValidCapacity,
     isValidString,
 };
+export default dataValidator;

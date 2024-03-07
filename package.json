@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "Luis Couto luiscouto10@ua.pt",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3",
+    "mongoose": "^8.2.1",
+    "validator": "^13.11.0"
+  }
 }

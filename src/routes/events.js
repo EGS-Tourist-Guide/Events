@@ -1,31 +1,30 @@
-// Import necessary dependencies
 import express from 'express';
-import eventController from '../controllers/eventController';
+import authValidator from '../middleware/authValidation.js';
+import dataValidator from '../middleware/dataValidation.js';
+import eventController from '../controllers/eventController.js';
 
-// Create a new instance of the express router
+// Create a new instance of the express router and apply authentication middleware to all routes
 const router = express.Router();
+router.use(authValidator.isValidAuthKey);
 
-// Define the routes for all GET requests
+// Define the routes and apply data validation middleware
 router.get('/', async (req, res) => {
     await eventController.getAllEvents(req, res);
 });
 
-router.get('/:uuid', async (req, res) => {
+router.get('/:uuid', dataValidator.isValidUUID, async (req, res) => {
     await eventController.getSingleEvent(req, res);
 });
 
-// Define the routes for all POST requests
-router.post('/', async (req, res) => {
+router.post('/', dataValidator.isValidBody, async (req, res) => {
     await eventController.postEvent(req, res);
 });
 
-// Define the routes for all PUT requests
-router.put('/:uuid', async (req, res) => {
+router.put('/:uuid', dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.putEvent(req, res);
 });
 
-// Define the routes for all DELETE requests
-router.delete('/:uuid', async (req, res) => {
+router.delete('/:uuid', dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);
 });
 

@@ -1,4 +1,3 @@
-// Import necessary dependencies
 import { Schema, model } from 'mongoose';
 
 // Define the Event schema

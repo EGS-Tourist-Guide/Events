@@ -37,7 +37,7 @@ const isValidQuery = (req, res, next) => {
     try {
         
         // Check if invalid query parameters are present in the request
-        const allowedParameters = ['name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice'];
+    const allowedParameters = ['searchString', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice'];
         const invalidParams = Object.keys(req.query).filter(param => !allowedParameters.includes(param.toLocaleLowerCase()));
 
         if (invalidParams.length > 0) {
@@ -45,8 +45,8 @@ const isValidQuery = (req, res, next) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [name, organizer, city, category, startDate, minPrice, maxPrice]`,
-                    example: '?name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Category_Name&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
+                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [searchString, name, organizer, city, category, startDate, minPrice, maxPrice]`,
+                    example: '?name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
                 }
             });
         }

@@ -9,19 +9,19 @@ router.use(authValidator.isValidAuthKey);
 
 // Define the routes and apply data validation middleware
 router.get('/', dataValidator.isValidQuery, async (req, res) => {
-    await eventController.getAllEvents(req, res);
+    //await eventController.getAllEvents(req, res);
 });
 
 router.get('/:uuid', dataValidator.isValidUUID, async (req, res) => {
-    await eventController.getSingleEvent(req, res);
+    await eventController.getEvent(req, res);
 });
 
 router.post('/', dataValidator.isValidBody, async (req, res) => {
-    await eventController.postEvent(req, res);
+    //await eventController.postEvent(req, res);
 });
 
 router.put('/:uuid', dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
-    await eventController.putEvent(req, res);
+    //await eventController.putEvent(req, res);
 });
 
 router.delete('/:uuid', dataValidator.isValidUUID, async (req, res) => {

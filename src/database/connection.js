@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
+import config from "../config/config.js";
 
 // Open connection to the database
 const connect = async () => {
     try {
-        await mongoose.connect(process.env.SERVICE_DATABASE_URL,
+        await mongoose.connect(config.database.uri,
             {
-                appName: process.env.SERVICE_API_NAME,
-                dbName: process.env.SERVICE_DATABASE_NAME,
+                appName: config.database.appName,
+                dbName: config.database.dbName,
                 autoIndex: false,
             });
     } catch (error) {

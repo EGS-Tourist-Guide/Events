@@ -1,3 +1,5 @@
+import config from "../config/config.js";
+
 // Verify if request authentication key is valid
 const isValidAuthKey = (req, res, next) => {
     try {
@@ -17,7 +19,7 @@ const isValidAuthKey = (req, res, next) => {
         }
 
         // Check if the API key is valid
-        if (authHeader !== process.env.SERVICE_API_KEY) {
+        if (authHeader !== config.server.key) {
             res.setHeader('WWW-Authenticate', 'Basic realm="service-api-key"');
             return res.status(401).json({
                 error: {

@@ -17,11 +17,140 @@ const isValidUUID = (req, res, next) => {
                 }
             });
         }
-        
+
         // All checks passed, continue
         next();
 
     } catch (error) {
+        return res.status(500).json({
+            error: {
+                code: '500',
+                message: 'Internal Server Error',
+                details: 'An unexpected error has occurred. Please try again later'
+            }
+        });
+    }
+};
+
+// Verify if request contains valid query parameters
+const isValidQuery = (req, res, next) => {
+    try {
+        
+        // Check if invalid query parameters are present in the request
+        const allowedParameters = ['name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice'];
+        const invalidParams = Object.keys(req.query).filter(param => !allowedParameters.includes(param.toLocaleLowerCase()));
+
+        if (invalidParams.length > 0) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [name, organizer, city, category, startDate, minPrice, maxPrice]`,
+                    example: '?name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Category_Name&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
+                }
+            });
+        }
+
+        // Check if valid query parameters are of the correct type and format
+        if (req.query.name !== undefined) {
+            if (typeof req.query.name !== 'string' || !validator.isLength(req.query.name.trim(), { min: 1, max: 256 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'Event_name'
+                    }
+                });
+            }
+        }
+
+        if (req.query.organizer !== undefined) {
+            if (typeof req.query.organizer !== 'string' || !validator.isLength(req.query.organizer.trim(), { min: 1, max: 256 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <organizer> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'Organizer_name'
+                    }
+                });
+            }
+        }
+
+        if (req.query.city !== undefined) {
+            if (typeof req.query.city !== 'string' || !validator.isLength(req.query.city.trim(), { min: 1, max: 256 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <city> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'City_name'
+                    }
+                });
+            }
+        }
+
+        if (req.query.category !== undefined) {
+            const options = ["business", "conference", "culture", "networking", "technology", "sports", "wellness", "workshop"];
+            if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), options)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <category> must be a string of one of the following categories: [business, conference, culture, networking, technology, sports, wellness, workshop]',
+                        example: 'sports'
+                    }
+                });
+            }
+        }
+
+        if(req.query.startDate !== undefined) {
+            if (typeof req.query.startDate !== 'string' || !validator.isRFC3339(req.query.startDate)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <startDate> must be a string in the RFC 3339 format',
+                        example: '2024-12-31T23:59:59Z'
+                    }
+                });
+            }
+        }
+
+        if (req.query.minPrice !== undefined) {
+            const pattern = /^(EUR|USD|GBP)\d+\.\d{2}$/;
+            if (typeof req.query.minPrice !== 'string' || !pattern.test(req.query.minPrice)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <minPrice> must be a string in the correct format',
+                        example: 'EUR10.00'
+                    }
+                });
+            }
+        }
+
+        if (req.query.maxPrice !== undefined) {
+            const pattern = /^(EUR|USD|GBP)\d+\.\d{2}$/;
+            if (typeof req.query.maxPrice !== 'string' || !pattern.test(req.query.maxPrice)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <maxPrice> must be a string in the correct format',
+                        example: 'EUR10.00'
+                    }
+                });
+            }
+        }
+
+        // All checks passed, continue
+        next();
+
+    }
+    catch (error) {
         return res.status(500).json({
             error: {
                 code: '500',
@@ -170,7 +299,7 @@ const isValidBody = (req, res, next) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <category> must be a string of one of the following categories: ["business", "conference", "culture", "networking", "technology", "sports", "wellness", "workshop"]',
+                    details: 'Body parameter <category> must be a string of one of the following categories: [business, conference, culture, networking, technology, sports, wellness, workshop]',
                     example: 'sports'
                 }
             });
@@ -293,6 +422,7 @@ const isValidBody = (req, res, next) => {
 // Export
 const dataValidator = {
     isValidUUID,
+    isValidQuery,
     isValidBody
 };
 

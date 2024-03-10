@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(authValidator.isValidAuthKey);
 
 // Define the routes and apply data validation middleware
-router.get('/', async (req, res) => {
+router.get('/', dataValidator.isValidQuery, async (req, res) => {
     await eventController.getAllEvents(req, res);
 });
 

@@ -1,8 +1,9 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 // Define the Event schema
-const eventSchema = new Schema({
-    uuid:                   { type: String, required: true, unique: true, immutable: true },
+const eventSchema = new mongoose.Schema({
+    _id:                    { type: String, default: uuidv4(), required: true, unique: true, immutable: true },
     name:                   { type: String, required: true, unique: false, immutable: false },
     organizer:              { type: String, required: true, unique: false, immutable: false },
     street:                 { type: String, required: true, unique: false, immutable: false },
@@ -26,7 +27,7 @@ const eventSchema = new Schema({
 });
 
 // Create the Event model
-const Event = model('Event', eventSchema);
+const Event = mongoose.model('Event', eventSchema);
 
 // Export the Event model
 export default Event;

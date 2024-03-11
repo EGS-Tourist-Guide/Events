@@ -1,3 +1,13 @@
+// Create a new document in the database
+const createDocument = async (model, data) => {
+    try {
+        const newDocument = await model.create(data);
+        return newDocument;
+    } catch (error) {
+        throw error;
+    }
+};
+
 // Read all documents from the database, accepting optional query parameters
 const readAllDocuments = async (model, query = {}, limit = 25, offset = 0) => {
     try {
@@ -19,16 +29,6 @@ const readDocument = async (model, id) => {
     try {
         const document = await model.findById(id);
         return document;
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Create a new document in the database
-const createDocument = async (model, data) => {
-    try {
-        const newDocument = await model.create(data);
-        return newDocument;
     } catch (error) {
         throw error;
     }
@@ -58,9 +58,9 @@ const deleteDocument = async (model, id) => {
 
 // Export
 const dbOperation = {
+    createDocument,
     readAllDocuments,
     readDocument,
-    createDocument,
     updateDocument,
     deleteDocument
 };

@@ -1,3 +1,4 @@
+import { parse } from 'dotenv';
 import validator from 'validator';
 
 // Verify if request contains a valid UUIDv4 parameter
@@ -35,9 +36,9 @@ const isValidUUID = (req, res, next) => {
 // Verify if request contains valid query parameters
 const isValidQuery = (req, res, next) => {
     try {
-        
+
         // Check if invalid query parameters are present in the request
-    const allowedParameters = ['searchString', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice'];
+        const allowedParameters = ['search', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice', 'limit', 'offset'];
         const invalidParams = Object.keys(req.query).filter(param => !allowedParameters.includes(param.toLocaleLowerCase()));
 
         if (invalidParams.length > 0) {
@@ -45,13 +46,26 @@ const isValidQuery = (req, res, next) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [searchString, name, organizer, city, category, startDate, minPrice, maxPrice]`,
-                    example: '?name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
+                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [search, name, organizer, city, category, startDate, minPrice, maxPrice, limit, offset]`,
+                    example: '?limit=25&offset=0&search=Event_Name&name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
                 }
             });
         }
 
         // Check if valid query parameters are of the correct type and format
+        if (req.query.search !== undefined) {
+            if (typeof req.query.search !== 'string' || !validator.isLength(req.query.search.trim(), { min: 1, max: 256 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <search> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'Generic search string'
+                    }
+                });
+            }
+        }
+
         if (req.query.name !== undefined) {
             if (typeof req.query.name !== 'string' || !validator.isLength(req.query.name.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
@@ -92,7 +106,7 @@ const isValidQuery = (req, res, next) => {
         }
 
         if (req.query.category !== undefined) {
-            const options = ["business", "conference", "culture", "networking", "technology", "sports", "wellness", "workshop"];
+            const options = ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'];
             if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), options)) {
                 return res.status(400).json({
                     error: {
@@ -105,7 +119,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if(req.query.startDate !== undefined) {
+        if (req.query.startDate !== undefined) {
             if (typeof req.query.startDate !== 'string' || !validator.isRFC3339(req.query.startDate)) {
                 return res.status(400).json({
                     error: {
@@ -146,11 +160,44 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
+        if (req.query.limit !== undefined) {
+
+            const limit = Number.parseInt(req.query.limit);
+
+            if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <limit> must be a positive integer between 1 and 50',
+                        example: '25'
+                    }
+                });
+            }
+        }
+
+        if (req.query.offset !== undefined) {
+
+            const offset = Number.parseInt(req.query.offset);
+
+            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0){
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <offset> must be a non-negative integer',
+                        example: '50'
+                    }
+                });
+            }
+        }
+
         // All checks passed, continue
         next();
 
     }
     catch (error) {
+        console.log(error);
         return res.status(500).json({
             error: {
                 code: '500',
@@ -293,7 +340,7 @@ const isValidBody = (req, res, next) => {
             });
         }
 
-        const options = ["business", "conference", "culture", "networking", "technology", "sports", "wellness", "workshop"];
+        const options = ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'];
         if (typeof req.body.category !== 'string' || !validator.isIn(req.body.category.toLowerCase(), options)) {
             return res.status(400).json({
                 error: {

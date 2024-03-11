@@ -7,21 +7,21 @@ import eventController from '../controllers/eventController.js';
 const router = express.Router();
 router.use(authValidator.isValidAuthKey);
 
-// Define the routes and apply data validation middleware
+// Define the routes, apply data validation middleware and call the appropriate controller method
+router.post('/', dataValidator.isValidBody, async (req, res) => {
+    await eventController.createEvent(req, res);
+});
+
 router.get('/', dataValidator.isValidQuery, async (req, res) => {
-    //await eventController.getAllEvents(req, res);
+    await eventController.readAllEvents(req, res);
 });
 
 router.get('/:uuid', dataValidator.isValidUUID, async (req, res) => {
-    await eventController.getEvent(req, res);
-});
-
-router.post('/', dataValidator.isValidBody, async (req, res) => {
-    //await eventController.postEvent(req, res);
+    await eventController.readEvent(req, res);
 });
 
 router.put('/:uuid', dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
-    //await eventController.putEvent(req, res);
+    await eventController.updateEvent(req, res);
 });
 
 router.delete('/:uuid', dataValidator.isValidUUID, async (req, res) => {

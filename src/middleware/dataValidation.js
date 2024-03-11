@@ -1,5 +1,5 @@
-import { parse } from 'dotenv';
 import validator from 'validator';
+import config from '../config/config.js';
 
 // Verify if request contains a valid UUIDv4 parameter
 const isValidUUID = (req, res, next) => {
@@ -38,7 +38,7 @@ const isValidQuery = (req, res, next) => {
     try {
 
         // Check if invalid query parameters are present in the request
-        const allowedParameters = ['search', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice', 'limit', 'offset'];
+        const allowedParameters = config.server.allowedSearchParams;
         const invalidParams = Object.keys(req.query).filter(param => !allowedParameters.includes(param.toLocaleLowerCase()));
 
         if (invalidParams.length > 0) {
@@ -46,7 +46,7 @@ const isValidQuery = (req, res, next) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [search, name, organizer, city, category, startDate, minPrice, maxPrice, limit, offset]`,
+                    details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [${allowedParameters.join(', ')}]`,
                     example: '?limit=25&offset=0&search=Event_Name&name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
                 }
             });
@@ -106,13 +106,13 @@ const isValidQuery = (req, res, next) => {
         }
 
         if (req.query.category !== undefined) {
-            const options = ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'];
-            if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), options)) {
+            const allowedOptions = config.server.allowedCategories;
+            if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), allowedOptions)) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <category> must be a string of one of the following categories: [business, conference, culture, networking, technology, sports, wellness, workshop]',
+                        details: `Query parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
                         example: 'sports'
                     }
                 });
@@ -161,9 +161,7 @@ const isValidQuery = (req, res, next) => {
         }
 
         if (req.query.limit !== undefined) {
-
             const limit = Number.parseInt(req.query.limit);
-
             if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
                 return res.status(400).json({
                     error: {
@@ -177,10 +175,8 @@ const isValidQuery = (req, res, next) => {
         }
 
         if (req.query.offset !== undefined) {
-
             const offset = Number.parseInt(req.query.offset);
-
-            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0){
+            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0) {
                 return res.status(400).json({
                     error: {
                         code: '400',
@@ -340,13 +336,13 @@ const isValidBody = (req, res, next) => {
             });
         }
 
-        const options = ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'];
+        const allowedOptions = config.server.allowedCategories;
         if (typeof req.body.category !== 'string' || !validator.isIn(req.body.category.toLowerCase(), options)) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <category> must be a string of one of the following categories: [business, conference, culture, networking, technology, sports, wellness, workshop]',
+                    details: `Body parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
                     example: 'sports'
                 }
             });

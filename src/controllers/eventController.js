@@ -72,7 +72,60 @@ const readEvent = async (req, res) => {
 
 // Get all events, with optional filtering
 const readAllEvents = async (req, res) => {
-   
+    try {
+        // Open a new database connection if it is not already open
+        if (mongoose.connection.readyState === 0) {
+            await dbConnection.connect();
+        }
+
+        // Read events according to the query parameters
+        let events;
+
+        if (Object.keys(req.query).length === 0) {
+            events = await dbOperation.readAllDocuments(Event);
+        }
+        else {
+
+            // Extract the limit, offset, and search query parameters from the request (if they exist)
+            const { limit, offset, search, ...queryParams } = req.query;
+
+            // If the search query parameter was provided, create a regular expression to search for the value in the name, organizer, and category fields
+            const searchRegex = search ? new RegExp(search, 'i') : null;
+            const searchableFields = ['name', 'organizer', 'category'];
+            if (search) {
+                const searchConditions = searchableFields.map(field => ({
+                    [field]: { $regex: searchRegex }
+                }));
+                queryParams.$or = searchConditions;
+            }
+
+            events = await dbOperation.readAllDocuments(Event, queryParams, limit, offset);
+        }
+
+        // If the event array is empty (no events found)
+        if (events.length === 0) {
+            return res.status(404).json({
+                error: {
+                    code: '404',
+                    message: 'Not Found',
+                    details: 'The requested resource does not exist',
+                }
+            });
+        }
+
+        // Return the status code and event data
+        return res.status(200).json(events);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            error: {
+                code: '500',
+                message: 'Internal Server Error',
+                details: 'An unexpected error has occurred. Please try again later'
+            }
+        });
+    }
 };
 
 // Update an event by its UUID

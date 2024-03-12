@@ -8,6 +8,16 @@ const createDocument = async (model, data) => {
     }
 };
 
+// Read a single document from the database
+const readDocument = async (model, id) => {
+    try {
+        const document = await model.findById(id);
+        return document;
+    } catch (error) {
+        throw error;
+    }
+};
+
 // Read all documents from the database, accepting optional query parameters
 const readAllDocuments = async (model, query = {}, limit = 25, offset = 0) => {
     try {
@@ -19,16 +29,6 @@ const readAllDocuments = async (model, query = {}, limit = 25, offset = 0) => {
             allDocuments = await model.find(query).limit(limit).skip(offset);
         }
         return allDocuments;
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Read a single document from the database
-const readDocument = async (model, id) => {
-    try {
-        const document = await model.findById(id);
-        return document;
     } catch (error) {
         throw error;
     }
@@ -59,8 +59,8 @@ const deleteDocument = async (model, id) => {
 // Export
 const dbOperation = {
     createDocument,
-    readAllDocuments,
     readDocument,
+    readAllDocuments,
     updateDocument,
     deleteDocument
 };

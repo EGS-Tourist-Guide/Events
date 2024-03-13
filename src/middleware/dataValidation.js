@@ -337,7 +337,7 @@ const isValidBody = (req, res, next) => {
         }
 
         const allowedOptions = config.server.allowedCategories;
-        if (typeof req.body.category !== 'string' || !validator.isIn(req.body.category.toLowerCase(), options)) {
+        if (typeof req.body.category !== 'string' || !validator.isIn(req.body.category.toLowerCase(), allowedOptions)) {
             return res.status(400).json({
                 error: {
                     code: '400',

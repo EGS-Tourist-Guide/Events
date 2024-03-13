@@ -20,8 +20,10 @@ const config = {
     server: {
         port: process.env.SERVICE_API_PORT || 3000,
         key: process.env.SERVICE_API_KEY || 'key',
+        allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'],
         allowedSearchParams: ['search', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice', 'limit', 'offset'],
-        allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop']
+        allowedImageType: ['image/jpeg', 'image/png', 'image/tiff', 'image/webp'],
+        allowedImageMaxSizeMB: 10
     },
 };
 

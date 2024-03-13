@@ -2,20 +2,21 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import config from '../src/config/config.js';
-import router from '../src/routes/events.js';
 import dbConnection from '../src/database/connection.js';
 import firebaseStorage from '../src/services/firebaseStorage.js';
+import routerEvents from '../src/routes/events.js';
+import routerImages from '../src/routes/images.js';
 
 // Create a new instance of the express server
 const app = express();
 const port = config.server.port;
 
-// Apply middleware
+// Use middleware
 app.use(bodyParser.json());
 app.use(cors());
 
 // Use routes
-app.use('/v1', router);
+app.use('/v1', routerEvents, routerImages);
 
 // Default 404 route
 app.use((req, res) => {

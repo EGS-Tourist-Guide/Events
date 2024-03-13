@@ -21,7 +21,7 @@ const createEvent = async (req, res) => {
         const result = await dbOperation.createDocument(Event, req.body);
 
         // Return the status code and the location header with the uri of the created event
-        return res.status(201).setHeader('Location', `v1/${result._id}`).end();
+        return res.status(201).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
         return res.status(500).json({
@@ -157,7 +157,7 @@ const updateEvent = async (req, res) => {
         }
 
         // Return the status code and the location header with the uri of the updated event
-        return res.status(200).setHeader('Location', `v1/${result._id}`).end();
+        return res.status(200).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
         return res.status(500).json({

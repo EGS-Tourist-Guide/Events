@@ -3,7 +3,7 @@ import config from '../config/config.js';
 // Verify if request authentication key is valid
 const isValidAuthKey = (req, res, next) => {
     try {
-
+        
         // Check if the request contains header with the API key
         const authHeader = req.headers['service-api-key']
 

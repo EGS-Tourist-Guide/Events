@@ -19,6 +19,10 @@ const initializeStorage = async () => {
 // Upload a file to the storage service
 const updloadFile = async (fileData, remoteFileName) => {
     try {
+        // Check if the storage reference has been generated
+        if (!storageRef) {
+            initializeApp();
+        }
         const fileRef = ref(storageRef, remoteFileName);
         await uploadBytes(fileRef, fileData);
     } catch (error) {
@@ -29,6 +33,10 @@ const updloadFile = async (fileData, remoteFileName) => {
 // Download a file from the storage service
 const downloadFile = async (remoteFileName) => {
     try {
+        // Check if the storage reference has been generated
+        if (!storageRef) {
+            initializeApp();
+        }
         const fileRef = ref(storageRef, remoteFileName);
         const url = await getDownloadURL(fileRef);
         return url;
@@ -40,6 +48,10 @@ const downloadFile = async (remoteFileName) => {
 // Delete a file from the storage service
 const deleteFile = async (remoteFileName) => {
     try {
+        // Check if the storage reference has been generated
+        if (!storageRef) {
+            initializeApp();
+        }
         const fileRef = ref(storageRef, remoteFileName);
         await deleteObject(fileRef);
     } catch (error) {

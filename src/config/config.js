@@ -22,8 +22,9 @@ const config = {
         key: process.env.SERVICE_API_KEY || 'key',
         allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'],
         allowedSearchParams: ['search', 'name', 'organizer', 'city', 'category', 'startdate', 'minprice', 'maxprice', 'limit', 'offset'],
-        allowedImageType: ['image/jpeg', 'image/png', 'image/tiff', 'image/webp'],
-        allowedImageMaxSizeMB: 10
+        allowedFileType: ['image/jpeg'],
+        allowedFileMaxSizeMB: 10,
+        allowedFileNumber: 1
     },
 };
 

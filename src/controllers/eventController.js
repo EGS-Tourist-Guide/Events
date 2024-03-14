@@ -117,7 +117,6 @@ const readAllEvents = async (req, res) => {
         return res.status(200).json(events);
 
     } catch (error) {
-        console.log(error);
         return res.status(500).json({
             error: {
                 code: '500',
@@ -180,7 +179,7 @@ const deleteEvent = async (req, res) => {
 
         // Delete the event from the database
         await dbOperation.deleteDocument(Event, req.params.uuid);
-
+        
         // Whether the event was sucesfully deleted or an event with the UUID was not found, the return status code should be 204 (No Content)
         return res.status(204).end();
 

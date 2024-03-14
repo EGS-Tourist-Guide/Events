@@ -1,44 +1,47 @@
 import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, uploadBytesResumable } from "firebase/storage";
 import config from "../config/config.js";
 
 let firebaseApp;
-let storageRef;
+let storage;
 
 // Initialize firebase and generate reference to the storage service
 const initializeStorage = async () => {
     try {
         firebaseApp = initializeApp(config.firebaseStorage);
-        storageRef = getStorage(firebaseApp);
-        return storageRef;
+        storage = getStorage(firebaseApp);
+        return storage;
     } catch (error) {
         throw error;
     }
 };
 
 // Upload a file to the storage service
-const updloadFile = async (fileData, remoteFileName) => {
+const uploadFile = async (fileData, newFileName) => {
     try {
         // Check if the storage reference has been generated
-        if (!storageRef) {
+        if (!storage) {
             initializeApp();
         }
-        const fileRef = ref(storageRef, remoteFileName);
-        await uploadBytes(fileRef, fileData);
+        const fileToUpload = processFileData(fileData, newFileName);
+        const storageRef = ref(storage, fileToUpload.name);
+        await uploadBytes(storageRef, fileToUpload);
+
     } catch (error) {
         throw error;
     }
 };
 
 // Download a file from the storage service
-const downloadFile = async (remoteFileName) => {
+const downloadFile = async (newFileName) => {
     try {
         // Check if the storage reference has been generated
-        if (!storageRef) {
+        if (!storage) {
             initializeApp();
         }
-        const fileRef = ref(storageRef, remoteFileName);
-        const url = await getDownloadURL(fileRef);
+        const fileToDownload = 'event_' + newFileName + '.jpeg';
+        const storageRef = ref(storage, fileToDownload);
+        const url = await getDownloadURL(storageRef);
         return url;
     } catch (error) {
         throw error;
@@ -46,23 +49,31 @@ const downloadFile = async (remoteFileName) => {
 };
 
 // Delete a file from the storage service
-const deleteFile = async (remoteFileName) => {
+const deleteFile = async (newFileName) => {
     try {
         // Check if the storage reference has been generated
-        if (!storageRef) {
+        if (!storage) {
             initializeApp();
         }
-        const fileRef = ref(storageRef, remoteFileName);
-        await deleteObject(fileRef);
+        const fileToDelete = 'event_' + newFileName + '.jpeg';
+        const storageRef = ref(storage, fileToDelete);
+        await deleteObject(storageRef);
     } catch (error) {
         throw error;
     }
 };
 
+
+// Auxiliary function to process file data and generate a file object
+const processFileData = (fileData, newFileName) => {
+    const fileName = 'event_' + newFileName + '.' + fileData.mimetype.split("/")[1];
+    return new File([fileData.buffer], fileName, { type: fileData.mimetype});
+};
+
 // Export
 const firebaseStorage = {
     initializeStorage,
-    updloadFile,
+    uploadFile,
     downloadFile,
     deleteFile,
 };

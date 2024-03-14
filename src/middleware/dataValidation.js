@@ -193,7 +193,6 @@ const isValidQuery = (req, res, next) => {
 
     }
     catch (error) {
-        console.log(error);
         return res.status(500).json({
             error: {
                 code: '500',
@@ -430,19 +429,6 @@ const isValidBody = (req, res, next) => {
                         message: 'Bad Request',
                         details: 'Body parameter <favorites> must be a non-negative integer',
                         example: '10'
-                    }
-                });
-            }
-        }
-
-        if (req.body.thumbnail !== undefined) {
-            if (typeof req.body.thumbnail !== 'string' || !validator.isLength(req.body.thumbnail.trim(), { min: 1, max: 512 })) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Body parameter <thumbnail> must be a non-empty string between 1 and 512 characters long (excluding leading and trailing white spaces)',
-                        example: 'https://www.example.com/image.jpg'
                     }
                 });
             }

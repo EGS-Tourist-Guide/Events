@@ -28,7 +28,6 @@ const eventSchema = new mongoose.Schema({
     pointOfInterest:        { type: String, required: false, unique: false, immutable: false },
     maxParticipants:        { type: Number, required: false, unique: false, immutable: false, min:0 },
     currentParticipants:    { type: Number, required: false, unique: false, immutable: false, min:0 },
-    thumbnail:              { type: String, required: false, unique: false, immutable: false },
     createdAt:              { type: Date, default: Date.now, required: true, unique: false, immutable: true },
 });
 

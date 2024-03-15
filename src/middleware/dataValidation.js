@@ -60,7 +60,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <search> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'Generic search string'
+                        example: 'search=Generic string'
                     }
                 });
             }
@@ -73,7 +73,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'Event_name'
+                        example: 'name=Event_name'
                     }
                 });
             }
@@ -86,7 +86,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <organizer> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'Organizer_name'
+                        example: 'organizer=Organizer_name'
                     }
                 });
             }
@@ -99,7 +99,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <city> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'City_name'
+                        example: 'city=City_name'
                     }
                 });
             }
@@ -113,7 +113,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: `Query parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
-                        example: 'sports'
+                        example: 'category=sports'
                     }
                 });
             }
@@ -126,7 +126,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <startDate> must be a string in the RFC 3339 format',
-                        example: '2024-12-31T23:59:59Z'
+                        example: 'startDate=2024-12-31T23:59:59Z'
                     }
                 });
             }
@@ -140,7 +140,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <minPrice> must be a string in the correct format',
-                        example: 'EUR10.00'
+                        example: 'minPrice=EUR10.00'
                     }
                 });
             }
@@ -154,7 +154,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <maxPrice> must be a string in the correct format',
-                        example: 'EUR10.00'
+                        example: 'maxPrice=EUR10.00'
                     }
                 });
             }
@@ -167,8 +167,8 @@ const isValidQuery = (req, res, next) => {
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <limit> must be a positive integer between 1 and 50',
-                        example: '25'
+                        details: 'Query parameter <limit> must be a string that represents a valid positive integer between 1 and 50',
+                        example: 'limit=25'
                     }
                 });
             }
@@ -181,8 +181,8 @@ const isValidQuery = (req, res, next) => {
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <offset> must be a non-negative integer',
-                        example: '50'
+                        details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
+                        example: 'offset=50'
                     }
                 });
             }
@@ -395,13 +395,26 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.maxParticipants !== undefined) {
-            if (typeof req.body.maxParticipants !== 'number' || !Number.isInteger(req.body.maxParticipants) || req.body.maxParticipants < 0) {
+        if (req.body.pointOfInterest !== undefined) {
+            if (typeof req.body.pointOfInterest !== 'string' || !validator.isLength(req.body.pointOfInterest.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <maxParticipants> must be a non-negative integer',
+                        details: 'Body parameter <pointOfInterest> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'Point of interest'
+                    }
+                });
+            }
+        }
+
+        if (req.body.maxParticipants !== undefined) {
+            if (typeof req.body.maxParticipants !== 'number' || !Number.isInteger(req.body.maxParticipants) || req.body.maxParticipants < 0 || req.body.maxParticipants > 9999999999) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Body parameter <maxParticipants> must be a non-negative integer with a maximum value of 9999999999',
                         example: '100'
                     }
                 });
@@ -409,29 +422,30 @@ const isValidBody = (req, res, next) => {
         }
 
         if (req.body.currentParticipants !== undefined) {
-            if (typeof req.body.currentParticipants !== 'number' || !Number.isInteger(req.body.currentParticipants) || req.body.currentParticipants < 0) {
+            if (typeof req.body.currentParticipants !== 'number' || !Number.isInteger(req.body.currentParticipants) || req.body.currentParticipants < 0 || req.body.currentParticipants > 9999999999) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <currentParticipants> must be a non-negative integer',
+                        details: 'Body parameter <currentParticipants> must be a non-negative integer with a maximum value of 9999999999',
                         example: '50'
                     }
                 });
             }
         }
 
+        // Remove any additional parameters that are part of the schema but are not valid in a request
+        if (req.body._id !== undefined) {
+            delete req.body._id;
+        }
         if (req.body.favorites !== undefined) {
-            if (typeof req.body.favorites !== 'number' || !Number.isInteger(req.body.favorites) || req.body.favorites < 0) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Body parameter <favorites> must be a non-negative integer',
-                        example: '10'
-                    }
-                });
-            }
+            delete req.body.favorites;
+        }
+        if (req.body.createdAt !== undefined) {
+            delete req.body.createdAt;
+        }
+        if (req.body.currency !== undefined) {
+            delete req.body.currency;
         }
 
         // All checks passed, continue 

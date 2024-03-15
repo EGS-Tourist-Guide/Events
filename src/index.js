@@ -6,6 +6,8 @@ import dbConnection from '../src/database/connection.js';
 import firebaseStorage from '../src/services/firebaseStorage.js';
 import routerEvents from '../src/routes/events.js';
 import routerImages from '../src/routes/images.js';
+import swaggerUI from 'swagger-ui-express';
+import swaggerSpec from '../src/swagger/swagger.js';
 
 // Create a new instance of the express server
 const app = express();
@@ -15,7 +17,10 @@ const port = config.server.port;
 app.use(bodyParser.json());
 app.use(cors());
 
-// Use routes
+// Use swagger route
+app.use('/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+// Use service routes
 app.use('/v1', routerEvents, routerImages);
 
 // Default 404 route

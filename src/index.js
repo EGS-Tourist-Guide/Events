@@ -1,61 +1,77 @@
+import dotenv from 'dotenv';
+import path from 'path';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import config from '../src/config/config.js';
-import dbConnection from '../src/database/connection.js';
-import firebaseStorage from '../src/services/firebaseStorage.js';
-import routerEvents from '../src/routes/events.js';
-import routerImages from '../src/routes/images.js';
-import swaggerUI from 'swagger-ui-express';
-import swaggerSpec from '../src/swagger/swagger.js';
 
-// Create a new instance of the express server
-const app = express();
-const port = config.server.port;
+// Load environment variables
+const loadEnvVariables = async () => {
+  const __dirname = import.meta.dirname;
+  dotenv.config({ path: path.join(__dirname, '../src/.env') });
+};
 
-// Use middleware
-app.use(bodyParser.json());
-app.use(cors());
+// Configure the server
+const configServer = async () => {
+  const config = (await import('../src/config/config.js')).default;
+  const dbConnection = (await import('../src/database/connection.js')).default;
+  const firebaseStorage = (await import('../src/services/firebaseStorage.js')).default;
+  const routerEvents = (await import('../src/routes/events.js')).default;
+  const routerImages = (await import('../src/routes/images.js')).default;
+  const swaggerUI = (await import('swagger-ui-express')).default;
+  const swaggerSpec = (await import('../src/swagger/swagger.js')).default;
 
-// Use swagger route
-app.use('/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+  // Create a new instance of the express server
+  const app = express();
+  const port = config.server.port;
 
-// Use service routes
-app.use('/v1', routerEvents, routerImages);
+  // Use middleware
+  app.use(bodyParser.json());
+  app.use(cors());
 
-// Default 404 route
-app.use((req, res) => {
-  res.status(404).json({
-    error: {
-      code: '404',
-      message: 'Not Found',
-      details: 'The requested resource does not exist',
-    }
-  });
-});
+  // Use swagger route
+  app.use('/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
-// Handle process initialization
-try {
-  console.log('Connecting to the database...');
-  await dbConnection.connect();
-  console.log('Database connection has been successfully established!');
-  console.log('Initializing Firebase Storage...')
-  await firebaseStorage.initializeStorage();
-  console.log('Firebase Storage has been successfully initialized!');
-  console.log('Starting server...');
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  // Use service routes
+  app.use('/v1', routerEvents, routerImages);
+
+  // Default 404 route
+  app.use((req, res) => {
+    res.status(404).json({
+      error: {
+        code: '404',
+        message: 'Not Found',
+        details: 'The requested resource does not exist',
+      }
+    });
   });
 
-} catch (error) {
-  console.error(error);
-}
+  // Handle process initialization
+  try {
+    console.log('Connecting to the database...');
+    await dbConnection.connect();
+    console.log('Database connection has been successfully established!');
+    console.log('Initializing Firebase Storage...')
+    await firebaseStorage.initializeStorage();
+    console.log('Firebase Storage has been successfully initialized!');
+    console.log('Starting server...');
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
 
-// Handle process termination
-process.once('SIGINT', async () => {
-  console.log('Closing database connection...');
-  await dbConnection.disconnect();
-  console.log('Database connection has been succesfully closed!')
-  console.log('Server has been stopped');
-  process.exit(0);
-});
+  } catch (error) {
+    console.error(error);
+  }
+
+  // Handle process termination
+  process.once('SIGINT', async () => {
+    console.log('Closing database connection...');
+    await dbConnection.disconnect();
+    console.log('Database connection has been successfully closed!')
+    console.log('Server has been stopped');
+    process.exit(0);
+  });
+};
+
+// Start the server
+await loadEnvVariables();
+await configServer();

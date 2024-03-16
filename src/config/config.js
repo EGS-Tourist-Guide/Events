@@ -1,8 +1,4 @@
-import dotenv from 'dotenv';
-
 // Service configuration
-dotenv.config();
-
 const config = {
     database: {
         appName: process.env.SERVICE_API_NAME || 'Events_Service',

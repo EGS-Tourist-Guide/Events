@@ -161,27 +161,34 @@ routerEvents.post('/events', dataValidator.isValidBody, async (req, res) => {
  *           type: string
  *           minLength: 1
  *           maxLength: 256
- *       - name: startDate
+ *       - name: startdate
  *         in: query
- *         description: Events that start at this date (must be an exact match). It is case-sensitive
+ *         description: Events that start at this date (must be an exact match). If applied, will delete the beforedate and afterdate query parameters should they exist. It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time  
+ *       - name: beforedate
+ *         in: query
+ *         description: Events that end before or at this date (must be an exact match). It is case-sensitive
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: afterdate
+ *         in: query
+ *         description: Events that start at and after this date (must be an exact match). It is case-sensitive
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
  *       - name: maxprice
  *         in: query
- *         description: Maximum price of the event 
+ *         description: Maximum price of the event (must be an exact match). It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
- *           pattern: '^(EUR|USD|GBP)\d+\.\d{2}$' 
- *       - name: minprice
- *         in: query
- *         description: Minimum price of the event
- *         required: false
- *         schema:
- *           type: string
- *           pattern: '^(EUR|USD|GBP)\d+\.\d{2}$'
+ *           pattern: '^(\d+\.\d{2})$' 
  *     responses:
  *       200:
  *         description: OK
@@ -458,6 +465,90 @@ routerEvents.get('/events/:uuid', dataValidator.isValidUUID, async (req, res) =>
  */
 routerEvents.put('/events/:uuid', dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
+});
+
+/**
+ * @swagger
+ * /v1/events/{uuid}/favorite:
+ *   patch:
+ *     tags:
+ *       - Events
+ *     summary: Add a favorite to an existing event
+ *     description: Updates an existing event by its UUID, increasing the number of favorites by 1
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - name: uuid
+ *         in: path
+ *         description: UUID of the event to update
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: OK
+ *         headers:
+ *           Location:
+ *             description: URI where the updated event can be found
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
+ *         headers:
+ *           WWW-Authenticate:
+ *             description: 'Basic realm="service-api-key"'
+ *             schema:
+ *               type: string
+ *       404:
+ *         description: Not Found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
+ */
+routerEvents.patch('/events/:uuid/favorite', dataValidator.isValidUUID, async (req, res) => {
+    await eventController.favoriteEvent(req, res);
 });
 
 /**

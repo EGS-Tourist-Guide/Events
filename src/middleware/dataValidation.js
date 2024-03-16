@@ -47,12 +47,40 @@ const isValidQuery = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [${allowedParameters.join(', ')}]`,
-                    example: '?limit=25&offset=0&search=Event_Name&name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startDate=2024-12-31T23:59:59Z&minPrice=EUR10.00&maxPrice=EUR100.00'
+                    example: '?limit=25&offset=0&search=Event_Name&name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
                 }
             });
         }
 
         // Check if valid query parameters are of the correct type and format
+        if (req.query.limit !== undefined) {
+            const limit = Number.parseInt(req.query.limit);
+            if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <limit> must be a string that represents a valid positive integer between 1 and 50',
+                        example: 'limit=25'
+                    }
+                });
+            }
+        }
+
+        if (req.query.offset !== undefined) {
+            const offset = Number.parseInt(req.query.offset);
+            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
+                        example: 'offset=50'
+                    }
+                });
+            }
+        }
+
         if (req.query.search !== undefined) {
             if (typeof req.query.search !== 'string' || !validator.isLength(req.query.search.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
@@ -119,8 +147,8 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.startDate !== undefined) {
-            if (typeof req.query.startDate !== 'string' || !validator.isRFC3339(req.query.startDate)) {
+        if (req.query.startdate !== undefined) {
+            if (typeof req.query.startdate !== 'string' || !validator.isRFC3339(req.query.startdate)) {
                 return res.status(400).json({
                     error: {
                         code: '400',
@@ -132,57 +160,41 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.minPrice !== undefined) {
-            const pattern = /^(EUR|USD|GBP)\d+\.\d{2}$/;
-            if (typeof req.query.minPrice !== 'string' || !pattern.test(req.query.minPrice)) {
+        if (req.query.beforedate !== undefined) {
+            if (typeof req.query.beforedate !== 'string' || !validator.isRFC3339(req.query.beforedate)) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <minPrice> must be a string in the correct format',
-                        example: 'minPrice=EUR10.00'
+                        details: 'Query parameter <beforedate> must be a string in the RFC 3339 format',
+                        example: 'beforedate=2024-12-31T23:59:59Z'
                     }
                 });
             }
         }
 
-        if (req.query.maxPrice !== undefined) {
-            const pattern = /^(EUR|USD|GBP)\d+\.\d{2}$/;
-            if (typeof req.query.maxPrice !== 'string' || !pattern.test(req.query.maxPrice)) {
+        if (req.query.afterdate !== undefined) {
+            if (typeof req.query.afterdate !== 'string' || !validator.isRFC3339(req.query.afterdate)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <afterdate> must be a string in the RFC 3339 format',
+                        example: 'afterdate=2024-12-31T23:59:59Z'
+                    }
+                });
+            }
+        }
+
+        if (req.query.maxprice !== undefined) {
+            const pattern = config.server.priceFormatQuery;
+            if (typeof req.query.maxprice !== 'string' || !pattern.test(req.query.maxprice)) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <maxPrice> must be a string in the correct format',
-                        example: 'maxPrice=EUR10.00'
-                    }
-                });
-            }
-        }
-
-        if (req.query.limit !== undefined) {
-            const limit = Number.parseInt(req.query.limit);
-            if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Query parameter <limit> must be a string that represents a valid positive integer between 1 and 50',
-                        example: 'limit=25'
-                    }
-                });
-            }
-        }
-
-        if (req.query.offset !== undefined) {
-            const offset = Number.parseInt(req.query.offset);
-            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
-                        example: 'offset=50'
+                        example: 'maxPrice=10.00'
                     }
                 });
             }
@@ -223,14 +235,14 @@ const isValidBody = (req, res, next) => {
             'name',
             'organizer',
             'street',
-            'doorNumber',
-            'postCode',
+            'doornumber',
+            'postcode',
             'city',
             'country',
             'contact',
             'category',
-            'startDate',
-            'endDate',
+            'startdate',
+            'enddate',
             'about',
         ];
 
@@ -280,23 +292,23 @@ const isValidBody = (req, res, next) => {
             });
         }
 
-        if (typeof req.body.doorNumber !== 'string' || !validator.isLength(req.body.doorNumber.trim(), { min: 1, max: 256 })) {
+        if (typeof req.body.doornumber !== 'string' || !validator.isLength(req.body.doornumber.trim(), { min: 1, max: 256 })) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <doorNumber> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                    details: 'Body parameter <doornumber> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
                     example: 'N123'
                 }
             });
         }
 
-        if (typeof req.body.postCode !== 'string' || !validator.isLength(req.body.postCode.trim(), { min: 1, max: 256 })) {
+        if (typeof req.body.postcode !== 'string' || !validator.isLength(req.body.postcode.trim(), { min: 1, max: 256 })) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <postCode> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                    details: 'Body parameter <postcode> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
                     example: '1234-567'
                 }
             });
@@ -347,23 +359,23 @@ const isValidBody = (req, res, next) => {
             });
         }
 
-        if (typeof req.body.startDate !== 'string' || !validator.isRFC3339(req.body.startDate)) {
+        if (typeof req.body.startdate !== 'string' || !validator.isRFC3339(req.body.startdate)) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <startDate> must be a string in the RFC 3339 format',
+                    details: 'Body parameter <startdate> must be a string in the RFC 3339 format',
                     example: '2024-12-31T23:59:59Z'
                 }
             });
         }
 
-        if (typeof req.body.endDate !== 'string' || !validator.isRFC3339(req.body.endDate)) {
+        if (typeof req.body.enddate !== 'string' || !validator.isRFC3339(req.body.enddate)) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <endDate> must be a string in the RFC 3339 format',
+                    details: 'Body parameter <enddate> must be a string in the RFC 3339 format',
                     example: '2024-12-31T23:59:59Z'
                 }
             });
@@ -382,7 +394,7 @@ const isValidBody = (req, res, next) => {
 
         // Check if optional body parameters, should they exist, are of the correct type and format
         if (req.body.price !== undefined) {
-            const pattern = /^(EUR|USD|GBP)\d+\.\d{2}$/;
+            const pattern = config.server.priceFormatReq;
             if (typeof req.body.price !== 'string' || !pattern.test(req.body.price)) {
                 return res.status(400).json({
                     error: {
@@ -395,39 +407,39 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointOfInterest !== undefined) {
-            if (typeof req.body.pointOfInterest !== 'string' || !validator.isLength(req.body.pointOfInterest.trim(), { min: 1, max: 256 })) {
+        if (req.body.pointofinterest !== undefined) {
+            if (typeof req.body.pointofinterest !== 'string' || !validator.isLength(req.body.pointofinterest.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <pointOfInterest> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        details: 'Body parameter <pointofinterest> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
                         example: 'Point of interest'
                     }
                 });
             }
         }
 
-        if (req.body.maxParticipants !== undefined) {
-            if (typeof req.body.maxParticipants !== 'number' || !Number.isInteger(req.body.maxParticipants) || req.body.maxParticipants < 0 || req.body.maxParticipants > 9999999999) {
+        if (req.body.maxparticipants !== undefined) {
+            if (typeof req.body.maxparticipants !== 'number' || !Number.isInteger(req.body.maxparticipants) || req.body.maxparticipants < 0 || req.body.maxparticipants > 9999999999) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <maxParticipants> must be a non-negative integer with a maximum value of 9999999999',
+                        details: 'Body parameter <maxparticipants> must be a non-negative integer with a maximum value of 9999999999',
                         example: '100'
                     }
                 });
             }
         }
 
-        if (req.body.currentParticipants !== undefined) {
-            if (typeof req.body.currentParticipants !== 'number' || !Number.isInteger(req.body.currentParticipants) || req.body.currentParticipants < 0 || req.body.currentParticipants > 9999999999) {
+        if (req.body.currentparticipants !== undefined) {
+            if (typeof req.body.currentparticipants !== 'number' || !Number.isInteger(req.body.currentparticipants) || req.body.currentparticipants < 0 || req.body.currentparticipants > 9999999999) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <currentParticipants> must be a non-negative integer with a maximum value of 9999999999',
+                        details: 'Body parameter <currentparticipants> must be a non-negative integer with a maximum value of 9999999999',
                         example: '50'
                     }
                 });
@@ -441,8 +453,8 @@ const isValidBody = (req, res, next) => {
         if (req.body.favorites !== undefined) {
             delete req.body.favorites;
         }
-        if (req.body.createdAt !== undefined) {
-            delete req.body.createdAt;
+        if (req.body.created !== undefined) {
+            delete req.body.created;
         }
         if (req.body.currency !== undefined) {
             delete req.body.currency;

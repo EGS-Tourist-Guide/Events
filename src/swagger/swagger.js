@@ -17,11 +17,11 @@ const eventRequest = {
       type: 'string',
       example: 'Street Name'
     },
-    doorNumber: {
+    doornumber: {
       type: 'string',
       example: '123'
     },
-    postCode: {
+    postcode: {
       type: 'string',
       example: '1234-567'
     },
@@ -43,12 +43,12 @@ const eventRequest = {
       enum: config.server.allowedCategories,
       example: 'technology'
     },
-    startDate: {
+    startdate: {
       type: 'string',
       format: 'date-time',
       example: '2024-04-07T20:00:00.001Z'
     },
-    endDate: {
+    enddate: {
       type: 'string',
       format: 'date-time',
       example: '2024-04-07T22:00:00.001Z'
@@ -62,18 +62,18 @@ const eventRequest = {
       pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
       example: 'EUR25.55'
     },
-    pointOfInterest: {
+    pointofinterest: {
       type: 'string',
       example: 'Point of interest'
     },
-    maxParticipants: {
+    maxparticipants: {
       type: 'integer',
       format: 'int32',
       minimum: 0,
       maximum: 9999999999,
       example: 100
     },
-    currentParticipants: {
+    currentparticipants: {
       type: 'integer',
       format: 'int32',
       minimum: 0,
@@ -85,14 +85,14 @@ const eventRequest = {
     'name',
     'organizer',
     'street',
-    'doorNumber',
-    'postCode',
+    'doornumber',
+    'postcode',
     'city',
     'country',
     'contact',
     'category',
-    'startDate',
-    'endDate',
+    'startdate',
+    'enddate',
     'about']
 };
 
@@ -117,11 +117,11 @@ const eventResponse = {
       type: 'string',
       example: 'Street Name'
     },
-    doorNumber: {
+    doornumber: {
       type: 'string',
       example: '123'
     },
-    postCode: {
+    postcode: {
       type: 'string',
       example: '1234-567'
     },
@@ -143,12 +143,12 @@ const eventResponse = {
       enum: config.server.allowedCategories,
       example: 'technology'
     },
-    startDate: {
+    startdate: {
       type: 'string',
       format: 'date-time',
       example: '2024-04-07T20:00:00.001Z'
     },
-    endDate: {
+    enddate: {
       type: 'string',
       format: 'date-time',
       example: '2024-04-07T22:00:00.001Z'
@@ -174,23 +174,23 @@ const eventResponse = {
       maximum: 9999999999,
       example: 100
     },
-    createdAt: {
+    created: {
       type: 'string',
       format: 'date-time',
       example: '2024-04-07T20:00:00.001Z'
     },
-    pointOfInterest: {
+    pointofinterest: {
       type: 'string',
       example: 'Point of interest'
     },
-    maxParticipants: {
+    maxparticipants: {
       type: 'integer',
       format: 'int32',
       minimum: 0,
       maximum: 9999999999,
       example: 100
     },
-    currentParticipants: {
+    currentparticipants: {
       type: 'integer',
       format: 'int32',
       minimum: 0,
@@ -203,19 +203,19 @@ const eventResponse = {
     'name',
     'organizer',
     'street',
-    'doorNumber',
-    'postCode',
+    'doornumber',
+    'postcode',
     'city',
     'country',
     'contact',
     'category',
-    'startDate',
-    'endDate',
+    'startdate',
+    'enddate',
     'about',
     'price',
     'currency',
     'favorites',
-    'createdAt'
+    'created'
   ]
 };
 

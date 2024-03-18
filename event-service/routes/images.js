@@ -4,9 +4,8 @@ import dataValidator from '../middleware/dataValidation.js';
 import fileValidator from '../middleware/fileValidation.js';
 import imageController from '../controllers/imageController.js';
 
-// Create a new instance of the express router and apply authentication middleware to all routes
+// Create a new instance of the express router
 const routerImages = express.Router();
-routerImages.use(authValidator.isValidAuthKey);
 
 /**
  * @swagger
@@ -151,7 +150,7 @@ routerImages.use(authValidator.isValidAuthKey);
  *                     details:
  *                       type: string
  */
-routerImages.post('/images/:uuid', dataValidator.isValidUUID, fileValidator.isValidFile, async (req, res) => {
+routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, async (req, res) => {
     await imageController.uploadFile(req, res);
 });
 
@@ -258,7 +257,7 @@ routerImages.post('/images/:uuid', dataValidator.isValidUUID, fileValidator.isVa
  *                     details:
  *                       type: string
  */
-routerImages.get('/images/:uuid', dataValidator.isValidUUID, async (req, res) => {
+routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await imageController.downloadFile(req, res);
 });
 
@@ -339,7 +338,7 @@ routerImages.get('/images/:uuid', dataValidator.isValidUUID, async (req, res) =>
  *                     details:
  *                       type: string
  */
-routerImages.delete('/images/:uuid', dataValidator.isValidUUID, async (req, res) => {
+routerImages.delete('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await imageController.deleteFile(req, res);
 });
 

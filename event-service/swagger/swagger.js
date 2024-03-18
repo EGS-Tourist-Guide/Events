@@ -289,7 +289,7 @@ const swaggerDefinition = {
 // Options for the swagger specification
 const options = {
   swaggerDefinition,
-  apis: ['src/routes/*.js']
+  apis: ['event-service/routes/*.js']
 };
 
 // Generate the swagger specification

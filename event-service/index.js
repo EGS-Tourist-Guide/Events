@@ -7,18 +7,18 @@ import cors from 'cors';
 // Load environment variables
 const loadEnvVariables = async () => {
   const __dirname = import.meta.dirname;
-  dotenv.config({ path: path.join(__dirname, '../src/.env') });
+  dotenv.config({ path: path.join(__dirname, '../event-service/.env') });
 };
 
 // Configure the server
 const configServer = async () => {
-  const config = (await import('../src/config/config.js')).default;
-  const dbConnection = (await import('../src/database/connection.js')).default;
-  const routerEvents = (await import('../src/routes/events.js')).default;
-  const routerImages = (await import('../src/routes/images.js')).default;
-  const routerKeys = (await import('../src/routes/keys.js')).default;
+  const config = (await import('../event-service/config/config.js')).default;
+  const dbConnection = (await import('../event-service/database/connection.js')).default;
+  const routerEvents = (await import('../event-service/routes/events.js')).default;
+  const routerImages = (await import('../event-service/routes/images.js')).default;
+  const routerKeys = (await import('../event-service/routes/keys.js')).default;
   const swaggerUI = (await import('swagger-ui-express')).default;
-  const swaggerSpec = (await import('../src/swagger/swagger.js')).default;
+  const swaggerSpec = (await import('../event-service/swagger/swagger.js')).default;
 
   // Create a new instance of the express server
   const app = express();

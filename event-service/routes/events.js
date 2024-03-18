@@ -3,9 +3,8 @@ import authValidator from '../middleware/authValidation.js';
 import dataValidator from '../middleware/dataValidation.js';
 import eventController from '../controllers/eventController.js';
 
-// Create a new instance of the express router and apply authentication middleware to all routes
+// Create a new instance of the express router 
 const routerEvents = express.Router();
-routerEvents.use(authValidator.isValidAuthKey);
 
 /**
  * @swagger
@@ -87,7 +86,7 @@ routerEvents.use(authValidator.isValidAuthKey);
  *                     details:
  *                       type: string
  */
-routerEvents.post('/events', dataValidator.isValidBody, async (req, res) => {
+routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValidBody, async (req, res) => {
     await eventController.createEvent(req, res);
 });
 
@@ -270,7 +269,7 @@ routerEvents.post('/events', dataValidator.isValidBody, async (req, res) => {
  *                     details:
  *                       type: string
  */
-routerEvents.get('/events', dataValidator.isValidQuery, async (req, res) => {
+routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQuery, async (req, res) => {
     await eventController.readAllEvents(req, res);
 });
 
@@ -371,7 +370,7 @@ routerEvents.get('/events', dataValidator.isValidQuery, async (req, res) => {
  *                     details:
  *                       type: string
  */
-routerEvents.get('/events/:uuid', dataValidator.isValidUUID, async (req, res) => {
+routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.readEvent(req, res);
 });
 
@@ -463,7 +462,7 @@ routerEvents.get('/events/:uuid', dataValidator.isValidUUID, async (req, res) =>
  *                     details:
  *                       type: string
  */
-routerEvents.put('/events/:uuid', dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
+routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
 });
 
@@ -547,7 +546,7 @@ routerEvents.put('/events/:uuid', dataValidator.isValidUUID, dataValidator.isVal
  *                     details:
  *                       type: string
  */
-routerEvents.patch('/events/:uuid/favorite', dataValidator.isValidUUID, async (req, res) => {
+routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.favoriteEvent(req, res);
 });
 
@@ -628,7 +627,7 @@ routerEvents.patch('/events/:uuid/favorite', dataValidator.isValidUUID, async (r
  *                     details:
  *                       type: string
  */
-routerEvents.delete('/events/:uuid', dataValidator.isValidUUID, async (req, res) => {
+routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);
 });
 

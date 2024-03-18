@@ -34,15 +34,17 @@ routerImages.use(authValidator.isValidAuthKey);
  *             type: object
  *             properties:
  *               file:
- *                 type: string
- *                 format: binary
- *                 description: MIME type must be image/jpeg with a maximum size of 10MB
+ *                 description: Allows 1 file per request. MIME type must be image/jpeg with a maximum size of 10MB
+ *                 type: array
+ *                 items:
+ *                  type: string
+ *                  format: binary
  *     responses:
  *       201:
  *         description: Created success
  *         headers:
  *           Location:
- *             description: URI where the newly created event can be found
+ *             description: URI where the newly created image can be found
  *             schema:
  *               type: string
  *       400:
@@ -84,6 +86,22 @@ routerImages.use(authValidator.isValidAuthKey);
  *             description: 'Basic realm="service-api-key"'
  *             schema:
  *               type: string
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
  *       413:
  *         description: Payload Too Large
  *         content:
@@ -159,17 +177,15 @@ routerImages.post('/images/:uuid', dataValidator.isValidUUID, fileValidator.isVa
  *       200:
  *         description: OK
  *         content:
- *           application/json:
+ *           image/jpeg:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: object
- *                   properties:
- *                     downloadUrl:
- *                       type: string
- *                     message:
- *                       type: string
+ *               type: string
+ *               format: binary
+ *         headers:
+ *           Content-Disposition:
+ *             description: Indicates the content is an downloadable attachment, providing a filename for the attachment
+ *             schema:
+ *               type: string
  *       400:
  *         description: Bad Request
  *         content:

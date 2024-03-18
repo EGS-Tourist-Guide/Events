@@ -14,7 +14,6 @@ const loadEnvVariables = async () => {
 const configServer = async () => {
   const config = (await import('../src/config/config.js')).default;
   const dbConnection = (await import('../src/database/connection.js')).default;
-  const firebaseStorage = (await import('../src/services/firebaseStorage.js')).default;
   const routerEvents = (await import('../src/routes/events.js')).default;
   const routerImages = (await import('../src/routes/images.js')).default;
   const routerKeys = (await import('../src/routes/keys.js')).default;
@@ -30,7 +29,7 @@ const configServer = async () => {
   app.use(cors());
 
   // Use swagger route
-  app.use('/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+  app.use('/v1/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   // Use service routes
   app.use('/v1', routerKeys, routerEvents, routerImages);
@@ -51,9 +50,6 @@ const configServer = async () => {
     console.log('Connecting to the database...');
     await dbConnection.connect();
     console.log('Database connection has been successfully established!');
-    console.log('Initializing Firebase Storage...')
-    await firebaseStorage.initializeStorage();
-    console.log('Firebase Storage has been successfully initialized!');
     console.log('Starting server...');
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);

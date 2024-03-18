@@ -1,11 +1,32 @@
-import firebaseStorage from '../services/firebaseStorage.js';
+import mongoose from 'mongoose';
+import amazon_S3 from '../services/amazon_S3.js';
+import dbConnection from '../database/connection.js';
+import dbOperation from '../database/operations.js';
+import Event from '../models/event.js';
 
 // Upload a file to the storage
 const uploadFile = async (req, res) => {
     try {
+        // Check if event with the given uuid exists
+        if (mongoose.connection.readyState === 0) {
+            await dbConnection.connect();
+        }
+
+        const event = await dbOperation.readDocument(Event, req.params.uuid);
+
+        // If the event does not exist
+        if (!event) {
+            return res.status(404).json({
+                error: {
+                    code: '403',
+                    message: 'Forbidden',
+                    details: 'You cannot associate an image to a non-existing event'
+                }
+            });
+        }
 
         // Upload the file to the storage
-        await firebaseStorage.uploadFile(req.files[0], req.params.uuid);
+        await amazon_S3.uploadFile(req.files[0], req.params.uuid);
 
         // Return the status code and the location header with the uri of the created event
         return res.status(201).setHeader('Location', `v1/images/${req.params.uuid}`).end();
@@ -21,67 +42,55 @@ const uploadFile = async (req, res) => {
     }
 };
 
-// Get the file download url from the storage
+// Download a file from the storage
 const downloadFile = async (req, res) => {
     try {
+        // Get the file from the storage
+        const file = await amazon_S3.downloadFile(req.params.uuid);
 
-        // Get the file download url from the storage
-        const url = await firebaseStorage.downloadFile(req.params.uuid);
-
-        // Return the status code and the file download url
-        return res.status(200).json({
-            success: {
-                downloadUrl: url,
-                message: 'You can access the file at the provided URL'
-            }
-        });
+        // Return the status code, headers and file
+        res.setHeader('Content-Type', file.type);
+        res.setHeader('Content-Disposition', `attachment; filename=${file.name}`);
+        return res.status(200).send(file.buffer);
 
     } catch (error) {
-        if (error.code === 'storage/object-not-found') {
+        if (error.Code === 'NoSuchKey') {
             return res.status(404).json({
                 error: {
                     code: '404',
                     message: 'Not Found',
-                    details: 'The requested resource does not exist'
+                    details: 'The requested resource does not exist',
                 }
             });
         }
-        else {
-            return res.status(500).json({
-                error: {
-                    code: '500',
-                    message: 'Internal Server Error',
-                    details: 'An unexpected error has occurred. Please try again later'
-                }
-            });
+        return res.status(500).json({
+            error: {
+                code: '500',
+                message: 'Internal Server Error',
+                details: 'An unexpected error has occurred. Please try again later'
+            }
         }
-    }
+        );
+    };
 };
 
 // Delete a file from the storage
 const deleteFile = async (req, res) => {
     try {
-
         // Delete the file from the storage
-        await firebaseStorage.deleteFile(req.params.uuid);
+        await amazon_S3.deleteFile(req.params.uuid);
 
         // Return the status code
         return res.status(204).end();
 
     } catch (error) {
-        // If a file with the UUID was not found, the return status code should still be 204 (No Content)
-        if (error.code === 'storage/object-not-found') {
-            return res.status(204).end();
-        }
-        else {
-            return res.status(500).json({
-                error: {
-                    code: '500',
-                    message: 'Internal Server Error',
-                    details: 'An unexpected error has occurred. Please try again later'
-                }
-            });
-        }
+        return res.status(500).json({
+            error: {
+                code: '500',
+                message: 'Internal Server Error',
+                details: 'An unexpected error has occurred. Please try again later'
+            }
+        });
     }
 };
 

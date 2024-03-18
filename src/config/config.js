@@ -1,17 +1,17 @@
 // Service configuration
 const config = {
+    amazon_S3: {
+        accessKeyId: process.env.AMAZON_S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AMAZON_S3_SECRET_ACCESS_KEY,
+        region: process.env.AMAZON_S3_REGION,
+        bucket: process.env.AMAZON_S3_BUCKET,
+        url: process.env.AMAZON_S3_URL,
+        forcePathStyle: true
+    },
     database: {
         appName: process.env.SERVICE_API_NAME || 'Events_Service',
         dbName: process.env.SERVICE_DATABASE_NAME || 'Events_Production',
         uri: process.env.SERVICE_DATABASE_URI || 'mongodb://localhost:27017',
-    },
-    firebaseStorage: {
-        apiKey: process.env.FIREBASE_API_KEY,
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        storageBucket: process.env.FIREBASE_BUCKET_ID,
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.FIREBASE_APP_ID
     },
     server: {
         port: process.env.SERVICE_API_PORT || 3000,

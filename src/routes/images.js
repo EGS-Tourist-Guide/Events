@@ -163,8 +163,13 @@ routerImages.post('/images/:uuid', dataValidator.isValidUUID, fileValidator.isVa
  *             schema:
  *               type: object
  *               properties:
- *                 downloadUrl: 
- *                    type: string
+ *                 success:
+ *                   type: object
+ *                   properties:
+ *                     downloadUrl:
+ *                       type: string
+ *                     message:
+ *                       type: string
  *       400:
  *         description: Bad Request
  *         content:

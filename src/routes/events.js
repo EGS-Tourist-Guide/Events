@@ -25,7 +25,7 @@ routerEvents.use(authValidator.isValidAuthKey);
  *             $ref: '#/components/schemas/Event_Request'
  *     responses:
  *       201:
- *         description: Created success
+ *         description: Created
  *         headers:
  *           Location:
  *             description: URI where the newly created event can be found

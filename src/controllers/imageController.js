@@ -30,7 +30,10 @@ const downloadFile = async (req, res) => {
 
         // Return the status code and the file download url
         return res.status(200).json({
-            downloadUrl: url
+            success: {
+                downloadUrl: url,
+                message: 'You can access the file at the provided URL'
+            }
         });
 
     } catch (error) {

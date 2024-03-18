@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
+import config from '../config/config.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import Event from '../models/event.js';
-import config from '../config/config.js';
 
 // Create a new event
 const createEvent = async (req, res) => {
@@ -120,8 +120,8 @@ const readAllEvents = async (req, res) => {
             }
 
             // If maxprice query parameter was provided, add that condition to the query
-            if(queryParams.maxprice !== undefined) {
-                queryParams.price = { $lte: queryParams.maxprice};
+            if (queryParams.maxprice !== undefined) {
+                queryParams.price = { $lte: queryParams.maxprice };
                 delete queryParams.maxprice;
             }
 
@@ -205,7 +205,7 @@ const deleteEvent = async (req, res) => {
 
         // Delete the event from the database
         await dbOperation.deleteDocument(Event, req.params.uuid);
-        
+
         // Whether the event was sucesfully deleted or an event with the UUID was not found, the return status code should be 204 (No Content)
         return res.status(204).end();
 

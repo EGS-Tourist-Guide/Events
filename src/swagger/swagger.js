@@ -238,6 +238,10 @@ const swaggerDefinition = {
   },
   tags: [
     {
+      name: 'Keys',
+      description: 'Operations available for Keys'
+    },
+    {
       name: 'Events',
       description: 'Operations available for Events'
     },

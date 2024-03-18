@@ -15,7 +15,7 @@ const config = {
     },
     server: {
         port: process.env.SERVICE_API_PORT || 3000,
-        key: process.env.SERVICE_API_KEY || 'key', 
+        secret: process.env.SERVICE_API_SECRET || 'secret',
         allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'], // Allowed event categories
         allowedSearchParams: ['limit', 'offset', 'search', 'name', 'organizer', 'city', 'category', 'startdate', 'beforedate', 'afterdate', 'maxprice' ], // Allowed query parameters
         allowedGenericSearchParams: ['name', 'organizer', 'category'], // Fields that can be searched using the <search> query parameter

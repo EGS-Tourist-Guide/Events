@@ -17,6 +17,7 @@ const configServer = async () => {
   const firebaseStorage = (await import('../src/services/firebaseStorage.js')).default;
   const routerEvents = (await import('../src/routes/events.js')).default;
   const routerImages = (await import('../src/routes/images.js')).default;
+  const routerKeys = (await import('../src/routes/keys.js')).default;
   const swaggerUI = (await import('swagger-ui-express')).default;
   const swaggerSpec = (await import('../src/swagger/swagger.js')).default;
 
@@ -32,7 +33,7 @@ const configServer = async () => {
   app.use('/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   // Use service routes
-  app.use('/v1', routerEvents, routerImages);
+  app.use('/v1', routerKeys, routerEvents, routerImages);
 
   // Default 404 route
   app.use((req, res) => {

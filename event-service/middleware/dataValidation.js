@@ -232,6 +232,7 @@ const isValidBody = (req, res, next) => {
 
         // Check if all required body parameters are present in the request body
         const requiredParameters = [
+            'userId',
             'name',
             'organizer',
             'street',
@@ -243,7 +244,7 @@ const isValidBody = (req, res, next) => {
             'category',
             'startdate',
             'enddate',
-            'about',
+            'about'
         ];
 
         for (const param of requiredParameters) {
@@ -259,6 +260,17 @@ const isValidBody = (req, res, next) => {
         }
 
         // Check if all required body parameters are of the correct type and format
+        if (typeof req.body.userId !== 'string' || !validator.isLength(req.body.userId.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <userId> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    example: 'Event_name'
+                }
+            });
+        }
+
         if (typeof req.body.name !== 'string' || !validator.isLength(req.body.name.trim(), { min: 1, max: 256 })) {
             return res.status(400).json({
                 error: {

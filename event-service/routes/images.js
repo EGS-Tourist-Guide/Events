@@ -34,10 +34,11 @@ const routerImages = express.Router();
  *             properties:
  *               file:
  *                 description: Allows 1 file per request. MIME type must be image/jpeg with a maximum size of 10MB
- *                 type: array
- *                 items:
- *                  type: string
- *                  format: binary
+ *                 type: string
+ *                 format: binary
+ *               userId:
+ *                 type: string
+ *                 example: id12345
  *     responses:
  *       201:
  *         description: Created success
@@ -150,7 +151,7 @@ const routerImages = express.Router();
  *                     details:
  *                       type: string
  */
-routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, async (req, res) => {
+routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
     await imageController.uploadFile(req, res);
 });
 
@@ -279,6 +280,16 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *         schema:
  *           type: string
  *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: id12345
  *     responses:
  *       204:
  *         description: No Content
@@ -321,6 +332,22 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *             description: 'Basic realm="service-api-key"'
  *             schema:
  *               type: string
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -338,7 +365,7 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *                     details:
  *                       type: string
  */
-routerImages.delete('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+routerImages.delete('/images/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await imageController.deleteFile(req, res);
 });
 

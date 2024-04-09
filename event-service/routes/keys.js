@@ -32,6 +32,8 @@ const routerKeys = express.Router();
  *                       type: string
  *                     key:
  *                       type: string
+ *                     appId:
+ *                       type: string
  *       500:
  *         description: Internal Server Error
  *         content:

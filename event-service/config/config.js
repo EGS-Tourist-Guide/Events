@@ -1,6 +1,6 @@
 // Service configuration
 const config = {
-    amazon_S3: {
+    amazonS3: {
         accessKeyId: process.env.AMAZON_S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.AMAZON_S3_SECRET_ACCESS_KEY,
         region: process.env.AMAZON_S3_REGION,

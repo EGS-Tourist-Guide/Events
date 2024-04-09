@@ -3,6 +3,7 @@ import config from '../config/config.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import Event from '../models/event.js';
+import Favorite from '../models/favorite.js';
 
 // Create a new event
 const createEvent = async (req, res) => {
@@ -228,27 +229,61 @@ const favoriteEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // Increment the favorites count by 1
-        const data = { $inc: { favorites: 1 } };
-
-        // Update the event in the database
-        const result = await dbOperation.updateDocument(Event, req.params.uuid, data);
-
-        // If the event does not exist
-        if (result === null) {
-            return res.status(404).json({
+        // Check if the favoriteStatus parameter is a boolean
+        if (typeof req.body.favoriteStatus !== 'boolean') {
+            return res.status(400).json({
                 error: {
-                    code: '404',
-                    message: 'Not Found',
-                    details: 'The requested resource does not exist',
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <favoriteStatus> must be a boolean',
+                    example: 'true'
                 }
             });
         }
 
+        // Check if user has previously favorited the event
+        const query = { eventId: req.params.uuid, userId: req.body.userId };
+        const favorite = await dbOperation.readAllDocuments(Favorite, query, 1, 0);
+
+        // If he has never favorited the event, create a new favorite entry and increment the event favorites count by 1, using a transaction
+        if (favorite === null || favorite === undefined || favorite.length === 0) {
+            const newFavorite = {
+                eventId: req.params.uuid,
+                userId: req.body.userId,
+                favoriteStatus: req.body.favoriteStatus
+            };
+
+            const session = await mongoose.startSession();
+            session.startTransaction();
+            await dbOperation.createDocument(Favorite, newFavorite);
+            await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: 1 } });
+            await session.commitTransaction();
+            session.endSession();
+        }
+        // If user has previously favorited the event before, update the favorite entry and the event favorites count accordingly, using a transaction
+        else {
+            const newFavorite = { favoriteStatus: req.body.favoriteStatus };
+            const session = await mongoose.startSession();
+            session.startTransaction();
+
+            if (!favorite[0].favoriteStatus && req.body.favoriteStatus) {       // If favoriting the event
+                await dbOperation.updateDocument(Favorite, favorite[0]._id, newFavorite);
+                await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: 1 } });
+            }
+            else if (favorite[0].favoriteStatus && !req.body.favoriteStatus) {  // If unfavoriting the event
+                await dbOperation.updateDocument(Favorite, favorite[0]._id, newFavorite);
+                await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: -1 } });
+            }
+            await session.commitTransaction();
+            session.endSession();
+        }
+
         // Return the status code and the location header with the uri of the updated event
-        return res.status(200).setHeader('Location', `v1/events/${result._id}`).end();
+        return res.status(200).setHeader('Location', `v1/events/${req.params.uuid}`).end();
 
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(500).json({
             error: {
                 code: '500',

@@ -5,6 +5,10 @@ import config from '../config/config.js';
 const eventRequest = {
   type: 'object',
   properties: {
+    userId: {
+      type: 'string',
+      example: 'id12345'
+    },
     name: {
       type: 'string',
       example: 'Event Name'
@@ -82,6 +86,7 @@ const eventRequest = {
     }
   },
   required: [
+    'userId',
     'name',
     'organizer',
     'street',
@@ -289,7 +294,7 @@ const swaggerDefinition = {
 // Options for the swagger specification
 const options = {
   swaggerDefinition,
-  apis: ['event-service/routes/*.js']
+  apis: ['routes/*.js']
 };
 
 // Generate the swagger specification

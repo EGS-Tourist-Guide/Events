@@ -12,10 +12,12 @@ const generateKey = async (req, res) => {
         // Generate a new key and hash it using api secret 
         const key = uuidv4();
         const hashedKey = crypto.createHash('sha256').update(key + config.server.secret).digest('hex');
+        const app_id = 'app_id_' + uuidv4();
         const apiKey = {
-            key: hashedKey
+            _id: hashedKey,
+            appId: app_id,
         };
-
+        
         // Open a new database connection if it is not already open
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
@@ -30,7 +32,8 @@ const generateKey = async (req, res) => {
                 code: '201',
                 message: 'Created',
                 details: 'This will be the only time this key is shown. You will need it to authenticate yourself when making requests. Store it securely. If lost, a new key must be generated',
-                key: key
+                key: key,
+                appId: app_id
             }
         });
 
@@ -51,18 +54,14 @@ const revokeKey = async (req, res) => {
         // Generate the hashed key using the provided key and the api secret
         const key = req.headers['service-api-key']
         const hashedKey = crypto.createHash('sha256').update(key + config.server.secret).digest('hex');
-        const query = {
-            key: hashedKey
-        };
 
         // Open a new database connection if it is not already open
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
         }
 
-        // Find the key in the database and update the field 'active' to false
-        const result = await dbOperation.readAllDocuments(ApiKey, query);
-        await dbOperation.updateDocument(ApiKey, result[0]._id, { active: false });
+        // Update the field 'active' to false
+        await dbOperation.updateDocument(ApiKey, hashedKey, { active: false });
 
         // Return the status code and an informative message
         return res.status(200).json({

@@ -445,6 +445,22 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *             description: 'Basic realm="service-api-key"'
  *             schema:
  *               type: string
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -462,7 +478,7 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *                     details:
  *                       type: string
  */
-routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
+routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
 });
 
@@ -484,6 +500,19 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *         schema:
  *           type: string
  *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: id12345
+ *               favoriteStatus:
+ *                 type: boolean
+ *                 example: true
  *     responses:
  *       200:
  *         description: OK
@@ -513,6 +542,22 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *             description: 'Basic realm="service-api-key"'
  *             schema:
  *               type: string
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
  *       404:
  *         description: Not Found
  *         content:
@@ -546,7 +591,7 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *                     details:
  *                       type: string
  */
-routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.favoriteEvent(req, res);
 });
 
@@ -568,6 +613,16 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, dataV
  *         schema:
  *           type: string
  *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: id12345
  *     responses:
  *       204:
  *         description: No Content
@@ -610,6 +665,22 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, dataV
  *             description: 'Basic realm="service-api-key"'
  *             schema:
  *               type: string
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                     details:
+ *                       type: string
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -627,7 +698,7 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, dataV
  *                     details:
  *                       type: string
  */
-routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey,  authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);
 });
 

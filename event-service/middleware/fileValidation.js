@@ -14,7 +14,7 @@ const initializeMulter = () => {
                     cb(null, true);
                 }
             },
-            limits: { fileSize: config.server.allowedFileMaxSizeMB * 1024 * 1024, files: config.server.allowedFileNumber, fieldSize: 0 }, // The maximum file size in bytes and the maximum number of files per request
+            limits: { fileSize: config.server.allowedFileMaxSizeMB * 1024 * 1024, files: config.server.allowedFileNumber, fieldSize: 100000}, // The maximum file size in bytes and the maximum number of files per request
         }).array('file'); // The name of the file input field in the form
     }
     catch (err) {
@@ -109,7 +109,7 @@ const isValidFile = (req, res, next) => {
             next();
         });
     }
-    catch (err) {
+    catch (error) {
         return res.status(500).json({
             error: {
                 code: '500',

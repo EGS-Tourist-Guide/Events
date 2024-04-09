@@ -10,6 +10,7 @@ const eventSchema = new mongoose.Schema({
         unique: true,
         immutable: true
     },
+    userId:                 { type: String, required: true, unique: false, immutable: false },
     name:                   { type: String, required: true, unique: false, immutable: false },
     organizer:              { type: String, required: true, unique: false, immutable: false },
     street:                 { type: String, required: true, unique: false, immutable: false },

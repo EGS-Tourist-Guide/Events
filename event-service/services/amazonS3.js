@@ -4,12 +4,12 @@ import config from "../config/config.js";
 // Create credentials structure
 const cred = {
     credentials: {
-        accessKeyId: config.amazon_S3.accessKeyId,
-        secretAccessKey: config.amazon_S3.secretAccessKey,
+        accessKeyId: config.amazonS3.accessKeyId,
+        secretAccessKey: config.amazonS3.secretAccessKey,
     },
-    region: config.amazon_S3.region,
-    endpoint: config.amazon_S3.url,
-    forcePathStyle: config.amazon_S3.forcePathStyle
+    region: config.amazonS3.region,
+    endpoint: config.amazonS3.url,
+    forcePathStyle: config.amazonS3.forcePathStyle
 }
 
 // Upload a file to the storage service
@@ -22,7 +22,7 @@ const uploadFile = async (fileData, newFileName) => {
         const client = new S3Client(cred);
         await client.send(new PutObjectCommand({
             Body: fileData.buffer,
-            Bucket: config.amazon_S3.bucket,
+            Bucket: config.amazonS3.bucket,
             Key: fileName
         }));
 
@@ -40,7 +40,7 @@ const downloadFile = async (newFileName) => {
         // Download the file data
         const client = new S3Client(cred);
         const result = await client.send(new GetObjectCommand({
-            Bucket: config.amazon_S3.bucket,
+            Bucket: config.amazonS3.bucket,
             Key: fileName,
         }));
 
@@ -71,7 +71,7 @@ const deleteFile = async (fileName) => {
         // Delete the file
         const client = new S3Client(cred);
         await client.send(new DeleteObjectCommand({
-            Bucket: config.amazon_S3.bucket,
+            Bucket: config.amazonS3.bucket,
             Key: fileToDelete,
         }));
 
@@ -81,10 +81,10 @@ const deleteFile = async (fileName) => {
 };
 
 // Export
-const amazon_S3 = {
+const amazonS3 = {
     uploadFile,
     downloadFile,
     deleteFile
 };
 
-export default amazon_S3;
+export default amazonS3;

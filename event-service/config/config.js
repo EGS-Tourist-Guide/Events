@@ -1,21 +1,31 @@
 // Service configuration
 const config = {
     amazonS3: {
-        accessKeyId: process.env.AMAZON_S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AMAZON_S3_SECRET_ACCESS_KEY,
-        region: process.env.AMAZON_S3_REGION,
-        bucket: process.env.AMAZON_S3_BUCKET,
-        url: process.env.AMAZON_S3_URL,
+        accessKeyId: process.env.AMAZONS3_SERVICE_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AMAZONS3_SERVICE_SECRET_ACCESS_KEY,
+        region: process.env.AMAZONS3_SERVICE_REGION,
+        bucket: process.env.AMAZONS3_SERVICE_BUCKET,
+        url: process.env.AMAZONS3_SERVICE_URL,
         forcePathStyle: true
     },
+    calendarService: {
+        apikey: process.env.CALENDAR_SERVICE_KEY,
+        baseUrl: process.env.CALENDAR_SERVICE_URL,
+        port: process.env.CALENDAR_SERVICE_PORT
+    },
+    poiService: {
+        apikey: process.env.POI_SERVICE_KEY,
+        baseUrl: process.env.POI_SERVICE_URL,
+        port: process.env.POI_SERVICE_PORT
+    },
     database: {
-        appName: process.env.SERVICE_API_NAME || 'Events_Service',
-        dbName: process.env.SERVICE_DATABASE_NAME || 'Events_Production',
-        uri: process.env.SERVICE_DATABASE_URI || 'mongodb://localhost:27017',
+        appName: process.env.API_NAME,
+        dbName: process.env.DATABASE_NAME,
+        uri: process.env.DATABASE_URI
     },
     server: {
-        port: process.env.SERVICE_API_PORT || 3000,
-        secret: process.env.SERVICE_API_SECRET || 'secret',
+        port: process.env.API_PORT || 3000,
+        secret: process.env.API_SECRET || 'secret',
         allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'], // Allowed event categories
         allowedSearchParams: ['limit', 'offset', 'search', 'name', 'organizer', 'city', 'category', 'startdate', 'beforedate', 'afterdate', 'maxprice' ], // Allowed query parameters
         allowedGenericSearchParams: ['name', 'organizer', 'category'], // Fields that can be searched using the <search> query parameter

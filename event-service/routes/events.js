@@ -13,7 +13,10 @@ const routerEvents = express.Router();
  *     tags:
  *       - Events
  *     summary: Create a new event
- *     description: Creates a new event with the provided data
+ *     description: Creates a new event. At least one of the fields pointofinterestId or pointOfInterest must be provided. 
+ *                  If both are provided, pointofinterestId will be given priority.
+ *                  If pointofinterestId is not provided, the pointOfInterest data will be used to create a new point of interest. 
+ *                  If pointOfInterestId is not provided/invalid and pointOfInterest is not provided, the request will be rejected.
  *     security:
  *       - ApiKeyAuth: []
  *     requestBody:
@@ -24,67 +27,13 @@ const routerEvents = express.Router();
  *             $ref: '#/components/schemas/Event_Request'
  *     responses:
  *       201:
- *         description: Created
- *         headers:
- *           Location:
- *             description: URI where the newly created event can be found
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Created_201'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValidBody, async (req, res) => {
     await eventController.createEvent(req, res);
@@ -198,76 +147,13 @@ routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValid
  *               items:
  *                 $ref: '#/components/schemas/Event_Response'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQuery, async (req, res) => {
     await eventController.readAllEvents(req, res);
@@ -279,8 +165,8 @@ routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQ
  *   get:
  *     tags:
  *       - Events
- *     summary: Get a single event
- *     description: Fetches a single event by its UUID
+ *     summary: Get an event
+ *     description: Fetches a single event
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -299,76 +185,13 @@ routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQ
  *             schema:
  *                 $ref: '#/components/schemas/Event_Response'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.readEvent(req, res);
@@ -380,8 +203,8 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *   put:
  *     tags:
  *       - Events
- *     summary: Update an existing event
- *     description: Updates an existing event by its UUID with the provided data
+ *     summary: Update an event
+ *     description: Updates an event with the provided data
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -403,80 +226,19 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *         description: OK
  *         headers:
  *           Location:
- *             description: URI where the updated event can be found
+ *             description: URI where the updated resource can be found
  *             schema:
  *               type: string
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
- *         description: Forbidden
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/Forbidden_403'
+ *       404:
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
@@ -488,8 +250,8 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.is
  *   patch:
  *     tags:
  *       - Events
- *     summary: Add a favorite to an existing event
- *     description: Updates an existing event by its UUID, increasing the number of favorites by 1
+ *     summary: Add/Remove a favorite from an event
+ *     description: Updates an event favorite count, increasing or decreasing the number by 1
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -518,78 +280,19 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.is
  *         description: OK
  *         headers:
  *           Location:
- *             description: URI where the updated event can be found
+ *             description: URI where the updated resource can be found
  *             schema:
  *               type: string
+ *       400:
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
- *         description: Forbidden
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/Forbidden_403'
  *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.favoriteEvent(req, res);
@@ -601,8 +304,8 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authV
  *   delete:
  *     tags:
  *       - Events
- *     summary: Delete a single event
- *     description: Deletes a single event by its UUID
+ *     summary: Delete an event
+ *     description: Deletes an event
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -625,78 +328,15 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authV
  *                 example: id12345
  *     responses:
  *       204:
- *         description: No Content
+ *         $ref: '#/components/responses/NoContent_204'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
- *         description: Forbidden
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/Forbidden_403'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey,  authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../config/config.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
@@ -13,14 +14,68 @@ const createEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // If provided, process the currency and price
+        let result;
+
+        const newEventId = uuidv4();
+        let eventTocreate = {
+            _id: newEventId,
+            userid: req.body.userid,
+            organizer: req.body.organizer,
+            category: req.body.category,
+            contact: req.body.contact,
+        };
         if (req.body.price !== undefined) {
-            req.body.currency = req.body.price.toString().substring(0, 3);
-            req.body.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
+            eventTocreate.currency = req.body.price.toString().substring(0, 3);
+            eventTocreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
+        }
+        if (req.body.maxParticipants !== undefined) {
+            eventTocreate.maxparticipants = req.body.maxparticipants;
+        }
+        if (req.body.currentParticipants !== undefined) {
+            eventTocreate.currentparticipants = req.body.currentparticipants;
         }
 
-        // Create a new event in the database
-        const result = await dbOperation.createDocument(Event, req.body);
+        const calendarTocreate = {
+            eventId: newEventId,
+            summary: req.body.title,
+            location: req.body.street + ' ' + req.body.doornumber + ', ' + req.body.postcode + ' ' + req.body.city + ', ' + req.body.country,
+            description: req.body.description,
+            start: req.body.startdate,
+            end: req.body.enddate
+        };
+
+        // CONDITION 1: Point of Interest ID is provided
+        if (req.body.pointofinterestid !== undefined) {
+            eventTocreate.pointofinterestid = req.body.pointofinterestid;
+
+            //result = await dbOperation.createDocument(Event, eventTocreate);
+        }
+
+        // CONDITION 2: Point of Interest ID is not provided
+        if (req.body.pointofinterestid === undefined) {
+            let poiTocreate = {
+                name: req.body.pointofinterest.name,
+                location: {
+                    type: 'Point',
+                    coordinates: [req.body.pointofinterest.latitude, req.body.pointofinterest.longitude],
+                },
+                locationName: req.body.city + ', ' + req.body.country,
+                street: req.body.street + ' ' + req.body.doornumber,
+                postcode: req.body.postcode,
+            }
+            if (req.body.pointofinterest.description !== undefined) {
+                poiTocreate.description = req.body.pointofinterest.description;
+            }
+            if (req.body.pointofinterest.category !== undefined) {
+                poiTocreate.category = req.body.pointOfInterest.category;
+            }
+            if (req.body.pointofinterest.thumbnail !== undefined) {
+                poiTocreate.thumbnail = req.body.pointofinterest.thumbnail;
+            }
+
+
+            //result = await dbOperation.createDocument(Event, eventTocreate);
+        }
 
         // Return the status code and the location header with the uri of the created event
         return res.status(201).setHeader('Location', `v1/events/${result._id}`).end();

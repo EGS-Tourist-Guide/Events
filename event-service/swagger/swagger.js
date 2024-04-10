@@ -1,11 +1,54 @@
 import swaggerJSDoc from 'swagger-jsdoc';
 import config from '../config/config.js';
 
+// Point of Interest schema definition
+const poi = {
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string',
+      example: 'Point of Interest Name'
+    },
+    latitude: {
+      type: 'number',
+      format: 'double',
+      minimum: -90,
+      maximum: 90,
+      example: 38.71667
+    },
+    longitude: {
+      type: 'number',
+      format: 'double',
+      minimum: -180,
+      maximum: 180,
+      example: -9.13333
+    },
+    category: {
+      type: 'string',
+      example: 'Point of Interest Category'
+    },
+    description: {
+      type: 'string',
+      example: 'Point of Interest Description'
+    },
+    thumbnail: {
+      type: 'string',
+      format: 'url',
+      example: 'https://example.com/image.jpg'
+    }
+  },
+  required: [
+    'name',
+    'latitude',
+    'longitude'
+  ]
+};
+
 // Event schema definition for requests
 const eventRequest = {
   type: 'object',
   properties: {
-    userId: {
+    userid: {
       type: 'string',
       example: 'id12345'
     },
@@ -37,15 +80,15 @@ const eventRequest = {
       type: 'string',
       example: 'Country Name'
     },
-    contact: {
-      type: 'string',
-      format: 'email',
-      example: 'organizer@example.com'
-    },
     category: {
       type: 'string',
       enum: config.server.allowedCategories,
       example: 'technology'
+    },
+    contact: {
+      type: 'string',
+      format: 'email',
+      example: 'organizer@example.com'
     },
     startdate: {
       type: 'string',
@@ -61,14 +104,11 @@ const eventRequest = {
       type: 'string',
       example: 'Event description'
     },
+    pointofinterest: poi,
     price: {
       type: 'string',
       pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
       example: 'EUR25.55'
-    },
-    pointofinterest: {
-      type: 'string',
-      example: 'Point of interest'
     },
     maxparticipants: {
       type: 'integer',
@@ -83,10 +123,14 @@ const eventRequest = {
       minimum: 0,
       maximum: 9999999999,
       example: 25
+    },
+    pointofinterestid: {
+      type: 'string',
+      example: 'poi12345'
     }
   },
   required: [
-    'userId',
+    'userid',
     'name',
     'organizer',
     'street',
@@ -94,11 +138,12 @@ const eventRequest = {
     'postcode',
     'city',
     'country',
-    'contact',
     'category',
+    'contact',
     'startdate',
     'enddate',
-    'about']
+    'about',
+  ]
 };
 
 // Event schema definition for responses
@@ -138,15 +183,15 @@ const eventResponse = {
       type: 'string',
       example: 'Country Name'
     },
-    contact: {
-      type: 'string',
-      format: 'email',
-      example: 'organizer@example.com'
-    },
     category: {
       type: 'string',
       enum: config.server.allowedCategories,
       example: 'technology'
+    },
+    contact: {
+      type: 'string',
+      format: 'email',
+      example: 'organizer@example.com'
     },
     startdate: {
       type: 'string',
@@ -172,22 +217,6 @@ const eventResponse = {
       enum: ['EUR', 'USD', 'GBP'],
       example: 'EUR'
     },
-    favorites: {
-      type: 'integer',
-      format: 'int32',
-      minimum: 0,
-      maximum: 9999999999,
-      example: 100
-    },
-    created: {
-      type: 'string',
-      format: 'date-time',
-      example: '2024-04-07T20:00:00.001Z'
-    },
-    pointofinterest: {
-      type: 'string',
-      example: 'Point of interest'
-    },
     maxparticipants: {
       type: 'integer',
       format: 'int32',
@@ -201,7 +230,15 @@ const eventResponse = {
       minimum: 0,
       maximum: 9999999999,
       example: 25
-    }
+    },
+    favorites: {
+      type: 'integer',
+      format: 'int32',
+      minimum: 0,
+      maximum: 9999999999,
+      example: 100
+    },
+    newpoi: poi
   },
   required: [
     '_id',
@@ -219,8 +256,10 @@ const eventResponse = {
     'about',
     'price',
     'currency',
+    'maxparticipants',
+    'currentparticipants',
     'favorites',
-    'created'
+    'newpoi'
   ]
 };
 
@@ -268,21 +307,220 @@ const swaggerDefinition = {
     },
     schemas: {
       Event_Request: eventRequest,
-      Event_Response: eventResponse
+      Event_Response: eventResponse,
+      PointOfInterest: poi
     },
     responses: {
-      Unauthorized: {
-        description: 'The API key is missing or invalid',
+      Created_201: {
+        description: 'Created',
+        headers: {
+          Location: {
+            description: 'URI where the newly created resource can be found',
+            schema: {
+              type: 'string'
+            }
+          }
+        }
+      },
+      NoContent_204: {
+        description: 'No Content',
+      },
+      BadRequest_400: {
+        description: 'Bad Request',
         content: {
           'application/json': {
-            description: 'The API key is missing or invalid',
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    },
+                    example: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      Unauthorized_401: {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         headers: {
           WWW_Authenticate: {
-            description: 'API Key',
+            description: 'Basic realm="service-api-key"',
             schema: {
               type: 'string'
+            }
+          }
+        }
+      },
+      Forbidden_403: {
+        description: 'Forbidden',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      NotFound_404: {
+        description: 'Not Found',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      PayloadTooLarge_413: {
+        description: 'Payload Too Large',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      UnsupportedMediaType_415: {
+        description: 'Unsupported Media Type',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      InternalServerError_500: {
+        description: 'Internal Server Error',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -294,7 +532,7 @@ const swaggerDefinition = {
 // Options for the swagger specification
 const options = {
   swaggerDefinition,
-  apis: ['routes/*.js']
+  apis: ['event-service/routes/*.js']
 };
 
 // Generate the swagger specification

@@ -41,115 +41,19 @@ const routerImages = express.Router();
  *                 example: id12345
  *     responses:
  *       201:
- *         description: Created success
- *         headers:
- *           Location:
- *             description: URI where the newly created image can be found
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Created_201'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
- *         description: Forbidden
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/Forbidden_403'
  *       413:
- *         description: Payload Too Large
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/PayloadTooLarge_413'
  *       415:
- *         description: Unsupported Media Type
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/UnsupportedMediaType_415'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
     await imageController.uploadFile(req, res);
@@ -187,76 +91,13 @@ routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.i
  *             schema:
  *               type: string
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await imageController.downloadFile(req, res);
@@ -292,78 +133,15 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *                 example: id12345
  *     responses:
  *       204:
- *         description: No Content
+ *         $ref: '#/components/responses/NoContent_204'
  *       400:
- *         description: Bad Request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *                     example:
- *                       type: string
+ *         $ref: '#/components/responses/BadRequest_400'
  *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
- *         headers:
- *           WWW-Authenticate:
- *             description: 'Basic realm="service-api-key"'
- *             schema:
- *               type: string
+ *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
- *         description: Forbidden
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/Forbidden_403'
  *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                     message:
- *                       type: string
- *                     details:
- *                       type: string
+ *         $ref: '#/components/responses/InternalServerError_500'
  */
 routerImages.delete('/images/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await imageController.deleteFile(req, res);

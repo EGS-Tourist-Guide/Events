@@ -232,7 +232,7 @@ const isValidBody = (req, res, next) => {
 
         // Check if all required body parameters are present in the request body
         const requiredParameters = [
-            'userId',
+            'userid',
             'name',
             'organizer',
             'street',
@@ -260,12 +260,12 @@ const isValidBody = (req, res, next) => {
         }
 
         // Check if all required body parameters are of the correct type and format
-        if (typeof req.body.userId !== 'string' || !validator.isLength(req.body.userId.trim(), { min: 1, max: 1024 })) {
+        if (typeof req.body.userid !== 'string' || !validator.isLength(req.body.userid.trim(), { min: 1, max: 1024 })) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <userId> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
                     example: 'Event_name'
                 }
             });
@@ -419,19 +419,6 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointofinterest !== undefined) {
-            if (typeof req.body.pointofinterest !== 'string' || !validator.isLength(req.body.pointofinterest.trim(), { min: 1, max: 256 })) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Body parameter <pointofinterest> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'Point of interest'
-                    }
-                });
-            }
-        }
-
         if (req.body.maxparticipants !== undefined) {
             if (typeof req.body.maxparticipants !== 'number' || !Number.isInteger(req.body.maxparticipants) || req.body.maxparticipants < 0 || req.body.maxparticipants > 9999999999) {
                 return res.status(400).json({
@@ -456,6 +443,17 @@ const isValidBody = (req, res, next) => {
                     }
                 });
             }
+        }
+
+        if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    example: 'Event_name'
+                }
+            });
         }
 
         // Remove any additional parameters that are part of the schema but are not valid in a request

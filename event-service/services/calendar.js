@@ -42,7 +42,12 @@ const addEventToCalendar = async (calendarId, eventData) => {
 // Get events from calendar with optional search parameters
 const getEventsFromCalendar = async (calendarId, searchParams) => {
     try {
-        const response = await fetch(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '?' + new URLSearchParams(searchParams), {
+        const params = new URLSearchParams();
+        for (const key in searchParams) {
+            params.append(key, searchParams[key]);
+        }
+
+        const response = await fetch(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '?' + params, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

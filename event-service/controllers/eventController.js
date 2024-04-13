@@ -5,6 +5,7 @@ import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import calendarService from '../services/calendar.js';
 import poiService from '../services/pointOfInterest.js';
+import amazonS3 from '../services/amazonS3.js';
 import Event from '../models/event.js';
 import Favorite from '../models/favorite.js';
 
@@ -176,10 +177,8 @@ const readEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // Read the event from the database
+        // Get information from the database
         const event = await dbOperation.readDocument(Event, req.params.uuid);
-
-        // If the event does not exist
         if (!event) {
             return res.status(404).json({
                 error: {
@@ -189,6 +188,71 @@ const readEvent = async (req, res) => {
                 }
             });
         }
+
+        // Get information from the calendar service
+        const calendarEvent = await calendarService.getEventsFromCalendar(event.calendarid, {eventId: req.params.uuid});
+        if (calendarEvent === null || calendarEvent === undefined || calendarEvent.length === 0) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
+        }
+        event.name = calendarEvent[0].summary;
+        event.about = calendarEvent[0].description;
+        event.startdate = calendarEvent[0].start;
+        event.enddate = calendarEvent[0].end;
+
+        // Get information from the point of interest service
+        const queryString = `query findPOIs {
+            searchPointsOfInterest(
+              apiKey: "${config.poiService.apikey}",
+              searchInput: {
+                _id: "${event.pointofinterestid}"
+              }
+            ) {
+                name
+                location {
+                coordinates
+                }
+                locationName
+                street
+                postcode
+                description
+                category
+                thumbnail
+              }
+          }`;
+
+        const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
+        if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+            return res.status(404).json({
+                error: {
+                    code: '404',
+                    message: 'Not Found',
+                    details: 'Body parameter <pointofinterestid> does not match a valid point of interest',
+                }
+            });
+        }
+        event.street = poi.data.searchPointsOfInterest[0].street;
+        event.postcode = poi.data.searchPointsOfInterest[0].postcode;
+        event.location = poi.data.searchPointsOfInterest[0].locationName;
+        event.pointofinterest = {
+            name: poi.data.searchPointsOfInterest[0].name,
+            latitude: poi.data.searchPointsOfInterest[0].location.coordinates[0],
+            longitude: poi.data.searchPointsOfInterest[0].location.coordinates[1],
+            category: poi.data.searchPointsOfInterest[0].category,
+            description: poi.data.searchPointsOfInterest[0].description,
+            thumbnail: poi.data.searchPointsOfInterest[0].thumbnail
+        };
+
+        // Remove unnecessary fields before returning
+        delete event.userid;
+        delete event.calendarid;
+        delete event.pointofinterestid;
+        delete event.created;
 
         // Return the status code and event data
         return res.status(200).json(event);
@@ -294,14 +358,92 @@ const updateEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // If provided, process the currency and price
-        if (req.body.price !== undefined) {
-            req.body.currency = req.body.price.toString().substring(0, 3);
-            req.body.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
+        if (req.body.pointofinterestid === null || req.body.pointofinterestid === undefined) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    example: 'poi12345'
+                }
+            });
         }
 
-        // Update the event in the database
-        const result = await dbOperation.updateDocument(Event, req.params.uuid, req.body);
+        let result;
+
+        let eventToUpdate = {
+            organizer: req.body.organizer,
+            category: req.body.category,
+            contact: req.body.contact,
+        };
+        if (req.body.price !== undefined) {
+            eventToCreate.currency = req.body.price.toString().substring(0, 3);
+            eventToCreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
+        }
+        if (req.body.maxparticipants !== undefined) {
+            eventToCreate.maxparticipants = req.body.maxparticipants;
+        }
+        if (req.body.currentparticipants !== undefined) {
+            eventToCreate.currentparticipants = req.body.currentparticipants;
+        }
+
+        const calendarEventToUpdate = {
+            summary: req.body.name,
+            location: req.body.street + ' ' + req.body.doornumber + ', ' + req.body.postcode + ' ' + req.body.city + ', ' + req.body.country,
+            description: req.body.about,
+            start: req.body.startdate,
+            end: req.body.enddate
+        };
+
+        // Manage calendar
+        const calendar = await calendarService.createUserCalendar(req.body.userid);
+        if (calendar === null || calendar === undefined) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
+        }
+        eventToUpdate.calendarid = calendar.calendarId;
+
+        // Manage point of interest
+        const queryString = `query findPOIs {
+            searchPointsOfInterest(
+                apiKey: "${config.poiService.apikey}",
+                searchInput: {
+                _id: "${req.body.pointofinterestid}"
+                }
+            ) {
+                _id
+                }
+            }`;
+
+        const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
+        if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+            return res.status(404).json({
+                error: {
+                    code: '404',
+                    message: 'Not Found',
+                    details: 'Body parameter <pointofinterestid> does not match a valid point of interest',
+                }
+            });
+        }
+        eventToUpdate.pointofinterestid = req.body.pointofinterestid; 
+
+        const calendarEvent = await calendarService.updateEventInCalendar(eventToUpdate.calendarid, req.params.uuid, calendarEventToUpdate); // Update event in the calendar service
+        if (calendarEvent === null || calendarEvent === undefined) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
+        }
+
+        result = await dbOperation.updateDocument(Event, eventToUpdate);  // Update event in event service
 
         // If the event does not exist
         if (result === null) {
@@ -336,10 +478,33 @@ const deleteEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // Delete the event from the database
-        await dbOperation.deleteDocument(Event, req.params.uuid);
+        const event = dbOperation.readDocument(req.params.uuid);
 
-        // Whether the event was sucesfully deleted or an event with the UUID was not found, the return status code should be 204 (No Content)
+        // Delete files associated with the event from the file storage service
+        if (event) {
+            await amazonS3.deleteFile(req.params.uuid)
+        }
+                
+        // Delete the event from the calendar service
+        if (event) {
+            const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid)
+            if (removed === null || removed === undefined) {
+                return res.status(502).json({
+                    error: {
+                        code: '502',
+                        message: 'Bad Gateway',
+                        details: 'The server got an invalid response from an upstream server',
+                    }
+                });
+            }
+        }
+
+        // Delete the event from the database
+        if (event) {
+            await dbOperation.deleteDocument(Event, req.params.uuid);
+        }
+
+        // Return the status code
         return res.status(204).end();
 
     } catch (error) {

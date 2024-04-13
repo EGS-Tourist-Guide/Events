@@ -44,8 +44,8 @@ const poi = {
   ]
 };
 
-// Event schema definition for requests
-const eventRequest = {
+// Event schema definition for POST requests 
+const eventRequestPOST = {
   type: 'object',
   properties: {
     userid: {
@@ -145,6 +145,107 @@ const eventRequest = {
     'about',
   ]
 };
+// Event schema definition for PUT requests 
+const eventRequestPUT = {
+  type: 'object',
+  properties: {
+    userid: {
+      type: 'string',
+      example: 'id12345'
+    },
+    name: {
+      type: 'string',
+      example: 'Event Name'
+    },
+    organizer: {
+      type: 'string',
+      example: 'Organizer Name'
+    },
+    street: {
+      type: 'string',
+      example: 'Street Name'
+    },
+    doornumber: {
+      type: 'string',
+      example: 'N123'
+    },
+    postcode: {
+      type: 'string',
+      example: '1234-567'
+    },
+    city: {
+      type: 'string',
+      example: 'City Name'
+    },
+    country: {
+      type: 'string',
+      example: 'Country Name'
+    },
+    category: {
+      type: 'string',
+      enum: config.server.allowedCategories,
+      example: 'technology'
+    },
+    contact: {
+      type: 'string',
+      format: 'email',
+      example: 'user@domain.com'
+    },
+    startdate: {
+      type: 'string',
+      format: 'date-time',
+      example: '2024-04-07T20:00:00.001Z'
+    },
+    enddate: {
+      type: 'string',
+      format: 'date-time',
+      example: '2024-04-07T22:00:00.001Z'
+    },
+    about: {
+      type: 'string',
+      example: 'This is a description of the event'
+    },
+    price: {
+      type: 'string',
+      pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
+      example: 'EUR25.55'
+    },
+    maxparticipants: {
+      type: 'integer',
+      format: 'int32',
+      minimum: 0,
+      maximum: 9999999999,
+      example: 100
+    },
+    currentparticipants: {
+      type: 'integer',
+      format: 'int32',
+      minimum: 0,
+      maximum: 9999999999,
+      example: 25
+    },
+    pointofinterestid: {
+      type: 'string',
+      example: 'poi12345'
+    }
+  },
+  required: [
+    'userid',
+    'name',
+    'organizer',
+    'street',
+    'doornumber',
+    'postcode',
+    'city',
+    'country',
+    'category',
+    'contact',
+    'startdate',
+    'enddate',
+    'about',
+    'pointofinterestid'
+  ]
+};
 
 // Event schema definition for responses
 const eventResponse = {
@@ -165,23 +266,15 @@ const eventResponse = {
     },
     street: {
       type: 'string',
-      example: 'Street Name'
-    },
-    doornumber: {
-      type: 'string',
-      example: '123'
+      example: 'Street Name N123'
     },
     postcode: {
       type: 'string',
       example: '1234-567'
     },
-    city: {
+    location: {
       type: 'string',
-      example: 'City Name'
-    },
-    country: {
-      type: 'string',
-      example: 'Country Name'
+      example: 'City Name, Country Name'
     },
     category: {
       type: 'string',
@@ -238,17 +331,15 @@ const eventResponse = {
       maximum: 9999999999,
       example: 100
     },
-    newpoi: poi
+    pointofinterest: poi
   },
   required: [
     '_id',
     'name',
     'organizer',
     'street',
-    'doornumber',
     'postcode',
-    'city',
-    'country',
+    'location',
     'contact',
     'category',
     'startdate',
@@ -259,7 +350,7 @@ const eventResponse = {
     'maxparticipants',
     'currentparticipants',
     'favorites',
-    'newpoi'
+    'pointofinterest'
   ]
 };
 
@@ -306,7 +397,8 @@ const swaggerDefinition = {
       }
     },
     schemas: {
-      Event_Request: eventRequest,
+      Event_Request_POST: eventRequestPOST,
+      Event_Request_PUT: eventRequestPUT,
       Event_Response: eventResponse,
       PointOfInterest: poi
     },

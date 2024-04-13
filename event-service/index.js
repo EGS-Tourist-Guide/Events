@@ -15,7 +15,7 @@ const configServer = async () => {
   const config = (await import('../event-service/config/config.js')).default;
   const dbConnection = (await import('../event-service/database/connection.js')).default;
   const routerEvents = (await import('../event-service/routes/events.js')).default;
-  const routerImages = (await import('../event-service/routes/images.js')).default;
+  const routerFiles = (await import('../event-service/routes/files.js')).default;
   const routerKeys = (await import('../event-service/routes/keys.js')).default;
   const swaggerUI = (await import('swagger-ui-express')).default;
   const swaggerSpec = (await import('../event-service/swagger/swagger.js')).default;
@@ -32,7 +32,7 @@ const configServer = async () => {
   app.use('/v1/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   // Use service routes
-  app.use('/v1', routerKeys, routerEvents, routerImages);
+  app.use('/v1', routerKeys, routerEvents, routerFiles);
 
   // Default 404 route
   app.use((req, res) => {

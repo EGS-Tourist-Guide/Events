@@ -24,7 +24,7 @@ const routerEvents = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Event_Request'
+ *             $ref: '#/components/schemas/Event_Request_POST'
  *     responses:
  *       201:
  *         $ref: '#/components/responses/Created_201'
@@ -228,7 +228,7 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Event_Request'
+ *             $ref: '#/components/schemas/Event_Request_PUT'
  *     responses:
  *       200:
  *         description: OK
@@ -279,7 +279,7 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.is
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               userid:
  *                 type: string
  *                 example: id12345
  *               favoriteStatus:
@@ -335,7 +335,7 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authV
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               userid:
  *                 type: string
  *                 example: id12345
  *     responses:

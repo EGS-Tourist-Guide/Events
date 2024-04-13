@@ -2,25 +2,25 @@ import express from 'express';
 import authValidator from '../middleware/authValidation.js';
 import dataValidator from '../middleware/dataValidation.js';
 import fileValidator from '../middleware/fileValidation.js';
-import imageController from '../controllers/imageController.js';
+import fileController from '../controllers/fileController.js';
 
 // Create a new instance of the express router
-const routerImages = express.Router();
+const routerFiles = express.Router();
 
 /**
  * @swagger
- * /v1/images/{uuid}:
+ * /v1/files/{uuid}:
  *   post:
  *     tags:
  *       - Files
- *     summary: Upload an image
- *     description: Uploads to the storage an image associated with a specific event
+ *     summary: Upload a file
+ *     description: Uploads to the storage a file associated with a specific event
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
  *       - name: uuid
  *         in: path
- *         description: UUID of the event associated with the image
+ *         description: UUID of the event associated with the file
  *         required: true
  *         schema:
  *           type: string
@@ -55,24 +55,24 @@ const routerImages = express.Router();
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
-    await imageController.uploadFile(req, res);
+routerFiles.post('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
+    await fileController.uploadFile(req, res);
 });
 
 /**
  * @swagger
- * /v1/images/{uuid}:
+ * /v1/files/{uuid}:
  *   get:
  *     tags:
  *       - Files
- *     summary: Get an image
- *     description: Fetches the download URL of the image associated with a specific event
+ *     summary: Get a file
+ *     description: Fetches the download URL of the file associated with a specific event
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
  *       - name: uuid
  *         in: path
- *         description: UUID of the event associated with the image
+ *         description: UUID of the event associated with the file
  *         required: true
  *         schema:
  *           type: string
@@ -99,24 +99,24 @@ routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.i
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
-    await imageController.downloadFile(req, res);
+routerFiles.get('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+    await fileController.downloadFile(req, res);
 });
 
 /**
  * @swagger
- * /v1/images/{uuid}:
+ * /v1/files/{uuid}:
  *   delete:
  *     tags:
  *       - Files
- *     summary: Delete an image
- *     description: Deletes the image associated with a specific event
+ *     summary: Delete a file
+ *     description: Deletes the file associated with a specific event
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
  *       - name: uuid
  *         in: path
- *         description: UUID of the event associated with the image
+ *         description: UUID of the event associated with the file
  *         required: true
  *         schema:
  *           type: string
@@ -143,9 +143,9 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerImages.delete('/images/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
-    await imageController.deleteFile(req, res);
+routerFiles.delete('/files/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
+    await fileController.deleteFile(req, res);
 });
 
 // Export the router
-export default routerImages;
+export default routerFiles;

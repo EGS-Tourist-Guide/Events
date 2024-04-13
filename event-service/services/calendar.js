@@ -12,7 +12,7 @@ const createUserCalendar = async (userId) => {
         });
 
         const data = await response.json();
-        return data.calendarId;
+        return data;
 
     } catch (error) {
         throw error;

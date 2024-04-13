@@ -7,9 +7,8 @@ const performOperation = async (graphQLquery) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': config.poiService.apikey
             },
-            body: JSON.stringify(graphQLquery)
+            body: JSON.stringify({ query: graphQLquery })
         });
 
         const data = await response.json();

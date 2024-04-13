@@ -7,29 +7,29 @@ const poi = {
   properties: {
     name: {
       type: 'string',
-      example: 'Point of Interest Name'
+      example: 'PoI Name'
     },
     latitude: {
       type: 'number',
-      format: 'double',
+      format: 'float',
       minimum: -90,
       maximum: 90,
       example: 38.71667
     },
     longitude: {
       type: 'number',
-      format: 'double',
+      format: 'float',
       minimum: -180,
       maximum: 180,
       example: -9.13333
     },
     category: {
       type: 'string',
-      example: 'Point of Interest Category'
+      example: 'PoI Category'
     },
     description: {
       type: 'string',
-      example: 'Point of Interest Description'
+      example: 'This is a description of the point of interest'
     },
     thumbnail: {
       type: 'string',
@@ -66,7 +66,7 @@ const eventRequest = {
     },
     doornumber: {
       type: 'string',
-      example: '123'
+      example: 'N123'
     },
     postcode: {
       type: 'string',
@@ -88,7 +88,7 @@ const eventRequest = {
     contact: {
       type: 'string',
       format: 'email',
-      example: 'organizer@example.com'
+      example: 'user@domain.com'
     },
     startdate: {
       type: 'string',
@@ -102,7 +102,7 @@ const eventRequest = {
     },
     about: {
       type: 'string',
-      example: 'Event description'
+      example: 'This is a description of the event'
     },
     pointofinterest: poi,
     price: {
@@ -500,6 +500,33 @@ const swaggerDefinition = {
       },
       InternalServerError_500: {
         description: 'Internal Server Error',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      BadGateway_502: {
+        description: 'Bad Gateway',
         content: {
           'application/json': {
             schema:

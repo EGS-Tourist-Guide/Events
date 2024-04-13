@@ -218,7 +218,6 @@ const isValidQuery = (req, res, next) => {
 // Verify if request contains a valid body
 const isValidBody = (req, res, next) => {
     try {
-
         // Check if request body is not missing or empty
         if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).json({
@@ -231,22 +230,7 @@ const isValidBody = (req, res, next) => {
         }
 
         // Check if all required body parameters are present in the request body
-        const requiredParameters = [
-            'userid',
-            'name',
-            'organizer',
-            'street',
-            'doornumber',
-            'postcode',
-            'city',
-            'country',
-            'contact',
-            'category',
-            'startdate',
-            'enddate',
-            'about'
-        ];
-
+        const requiredParameters = config.server.requiredBodyParams;
         for (const param of requiredParameters) {
             if (req.body[param] === undefined) {
                 return res.status(400).json({
@@ -259,6 +243,16 @@ const isValidBody = (req, res, next) => {
             }
         }
 
+        if (req.body.pointofinterestid === undefined && req.body.pointofinterest === undefined) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Request body must contain at least one of the following parameters: [pointofinterestid, pointofinterest]'
+                }
+            })
+        }
+
         // Check if all required body parameters are of the correct type and format
         if (typeof req.body.userid !== 'string' || !validator.isLength(req.body.userid.trim(), { min: 1, max: 1024 })) {
             return res.status(400).json({
@@ -266,7 +260,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'Event_name'
+                    example: 'id12345'
                 }
             });
         }
@@ -277,7 +271,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Event_name'
+                    example: 'Event Name'
                 }
             });
         }
@@ -288,7 +282,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <organizer> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Organizer_name'
+                    example: 'Organizer Name'
                 }
             });
         }
@@ -299,7 +293,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <street> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Street_name'
+                    example: 'Street Name'
                 }
             });
         }
@@ -332,7 +326,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <city> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'City_name'
+                    example: 'City Name'
                 }
             });
         }
@@ -343,7 +337,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <country> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Country_name'
+                    example: 'Country Name'
                 }
             });
         }
@@ -365,8 +359,8 @@ const isValidBody = (req, res, next) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: `Body parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
-                    example: 'sports'
+                    details: `Body parameter <category> must be a string of one of the following options: [${allowedOptions.join(', ')}]`,
+                    example: 'technology'
                 }
             });
         }
@@ -377,7 +371,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <startdate> must be a string in the RFC 3339 format',
-                    example: '2024-12-31T23:59:59Z'
+                    example: '2024-04-07T20:00:00.001Z'
                 }
             });
         }
@@ -388,7 +382,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <enddate> must be a string in the RFC 3339 format',
-                    example: '2024-12-31T23:59:59Z'
+                    example: '2024-04-07T22:00:00.001Z'
                 }
             });
         }
@@ -413,7 +407,7 @@ const isValidBody = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Body parameter <price> must be a string in the correct format',
-                        example: 'EUR10.00'
+                        example: 'EUR25.55'
                     }
                 });
             }
@@ -439,35 +433,104 @@ const isValidBody = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Body parameter <currentparticipants> must be a non-negative integer with a maximum value of 9999999999',
-                        example: '50'
+                        example: '25'
                     }
                 });
             }
         }
 
-        if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'Event_name'
-                }
-            });
+        if (req.body.pointofinterestid !== undefined) {
+            if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                        example: 'poi12345'
+                    }
+                });
+            }
         }
 
-        // Remove any additional parameters that are part of the schema but are not valid in a request
-        if (req.body._id !== undefined) {
-            delete req.body._id;
-        }
-        if (req.body.favorites !== undefined) {
-            delete req.body.favorites;
-        }
-        if (req.body.created !== undefined) {
-            delete req.body.created;
-        }
-        if (req.body.currency !== undefined) {
-            delete req.body.currency;
+        if (req.body.pointofinterest !== undefined) {
+            // Check if all required parameters were given
+            const requiredFields = config.server.requiredPoiParams;
+            for (const param of requiredFields) {
+                if (req.body.pointofinterest[param] === undefined) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: `pointofinterest was given but is missing the required parameter: ${param}`
+                        }
+                    });
+                }
+            }
+            // Check if required parameters are of the correct type and format
+            if (typeof req.body.pointofinterest.name !== 'string' || !validator.isLength(req.body.pointofinterest.name.trim(), { min: 1, max: 256 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'pointofinterest parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                        example: 'PoI Name'
+                    }
+                });
+            }
+            if (typeof req.body.pointofinterest.latitude !== 'number' || req.body.pointofinterest.latitude < -90 || req.body.pointofinterest.latitude > 90) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
+                        example: '38.71667'
+                    }
+                });
+            }
+            if (typeof req.body.pointofinterest.longitude !== 'number' || req.body.pointofinterest.longitude < -180 || req.body.pointofinterest.longitude > 180) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'pointofinterest parameter <longitude> must be a number in the interval [-180, 180]',
+                        example: '38.71667'
+                    }
+                });
+            }
+
+            // Check if optional parameters, should they exist, are of the correct type and format
+            if (typeof req.body.pointofinterest.category !== undefined) {
+                if (typeof req.body.pointofinterest.category !== 'string' || !validator.isLength(req.body.pointofinterest.category.trim(), { min: 1, max: 256 })) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'pointofinterest parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                            example: 'PoI Category'
+                        }
+                    });
+                }
+            }
+            if (typeof req.body.pointofinterest.description !== 'string' || !validator.isLength(req.body.pointofinterest.description.trim(), { min: 1, max: 2048 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'pointofinterest parameter <description> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
+                        example: 'This is a description of the point of interest'
+                    }
+                });
+            }
+            if (typeof req.body.pointofinterest.thumbnail !== 'string' || !validator.isURL(req.body.pointofinterest.thumbnail)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'pointofinterest parameter <thumbnail> must be a string in a valid url format',
+                        example: 'https://example.com/image.jpg'
+                    }
+                });
+            }
         }
 
         // All checks passed, continue 

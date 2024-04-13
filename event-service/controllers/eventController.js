@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import config from '../config/config.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
+import calendarService from '../services/calendar.js';
+import poiService from '../services/pointOfInterest.js';
 import Event from '../models/event.js';
 import Favorite from '../models/favorite.js';
 
@@ -15,9 +17,9 @@ const createEvent = async (req, res) => {
         }
 
         let result;
-
         const newEventId = uuidv4();
-        let eventTocreate = {
+
+        let eventToCreate = {
             _id: newEventId,
             userid: req.body.userid,
             organizer: req.body.organizer,
@@ -25,34 +27,77 @@ const createEvent = async (req, res) => {
             contact: req.body.contact,
         };
         if (req.body.price !== undefined) {
-            eventTocreate.currency = req.body.price.toString().substring(0, 3);
-            eventTocreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
+            eventToCreate.currency = req.body.price.toString().substring(0, 3);
+            eventToCreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
         }
-        if (req.body.maxParticipants !== undefined) {
-            eventTocreate.maxparticipants = req.body.maxparticipants;
+        if (req.body.maxparticipants !== undefined) {
+            eventToCreate.maxparticipants = req.body.maxparticipants;
         }
-        if (req.body.currentParticipants !== undefined) {
-            eventTocreate.currentparticipants = req.body.currentparticipants;
+        if (req.body.currentparticipants !== undefined) {
+            eventToCreate.currentparticipants = req.body.currentparticipants;
         }
 
-        const calendarTocreate = {
+        const calendarEventToCreate = {
             eventId: newEventId,
-            summary: req.body.title,
+            summary: req.body.name,
             location: req.body.street + ' ' + req.body.doornumber + ', ' + req.body.postcode + ' ' + req.body.city + ', ' + req.body.country,
-            description: req.body.description,
+            description: req.body.about,
             start: req.body.startdate,
             end: req.body.enddate
         };
 
-        // CONDITION 1: Point of Interest ID is provided
-        if (req.body.pointofinterestid !== undefined) {
-            eventTocreate.pointofinterestid = req.body.pointofinterestid;
-
-            //result = await dbOperation.createDocument(Event, eventTocreate);
+        // Manage calendar
+        const calendar = await calendarService.createUserCalendar(req.body.userid);
+        if (calendar === null || calendar === undefined) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
         }
+        eventToCreate.calendarid = calendar.calendarId;
 
-        // CONDITION 2: Point of Interest ID is not provided
-        if (req.body.pointofinterestid === undefined) {
+        // Manage point of interest
+        if (req.body.pointofinterestid !== undefined) {
+            const queryString = `query findPOIs {
+                searchPointsOfInterest(
+                  apiKey: "${config.poiService.apikey}",
+                  searchInput: {
+                    _id: "${req.body.pointofinterestid}"
+                  }
+                ) {
+                    _id
+                  }
+              }`;
+
+            const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
+            if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+                return res.status(404).json({
+                    error: {
+                        code: '404',
+                        message: 'Not Found',
+                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest',
+                    }
+                });
+            }
+            eventToCreate.pointofinterestid = req.body.pointofinterestid; 
+
+            const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
+            if (calendarEvent === null || calendarEvent === undefined) {
+                return res.status(502).json({
+                    error: {
+                        code: '502',
+                        message: 'Bad Gateway',
+                        details: 'The server got an invalid response from an upstream server',
+                    }
+                });
+            }
+
+            result = await dbOperation.createDocument(Event, eventToCreate);  // Create event in event service
+        }
+        else {
             let poiTocreate = {
                 name: req.body.pointofinterest.name,
                 location: {
@@ -63,18 +108,50 @@ const createEvent = async (req, res) => {
                 street: req.body.street + ' ' + req.body.doornumber,
                 postcode: req.body.postcode,
             }
+            if (req.body.pointofinterest.category !== undefined) {
+                poiTocreate.category = req.body.pointofinterest.category;
+            }
             if (req.body.pointofinterest.description !== undefined) {
                 poiTocreate.description = req.body.pointofinterest.description;
-            }
-            if (req.body.pointofinterest.category !== undefined) {
-                poiTocreate.category = req.body.pointOfInterest.category;
             }
             if (req.body.pointofinterest.thumbnail !== undefined) {
                 poiTocreate.thumbnail = req.body.pointofinterest.thumbnail;
             }
 
+            const mutationString = `mutation exCreation {
+                createPointOfInterest(
+                  apiKey: "${config.poiService.apikey}",
+                  input: "${poiTocreate}"
+                ) {
+                    poi {
+                        _id
+                    }
+                  }
+              }`;
+            const poi = await poiService.performOperation(mutationString); // Create poi in the point of interest service
+            if (poi === null || poi === undefined) {
+                return res.status(502).json({
+                    error: {
+                        code: '502',
+                        message: 'Bad Gateway',
+                        details: 'The server got an invalid response from an upstream server',
+                    }
+                });
+            }
+            eventToCreate.pointofinterestid = poi.data.createPointOfInterest.poi._id; 
+            
+            const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
+            if (calendarEvent === null || calendarEvent === undefined) {
+                return res.status(502).json({
+                    error: {
+                        code: '502',
+                        message: 'Bad Gateway',
+                        details: 'The server got an invalid response from an upstream server',
+                    }
+                });
+            }
 
-            //result = await dbOperation.createDocument(Event, eventTocreate);
+            result = await dbOperation.createDocument(Event, eventToCreate);  // Create event in event service
         }
 
         // Return the status code and the location header with the uri of the created event

@@ -13,10 +13,10 @@ const routerEvents = express.Router();
  *     tags:
  *       - Events
  *     summary: Create a new event
- *     description: Creates a new event. At least one of the fields pointofinterestId or pointOfInterest must be provided. 
- *                  If both are provided, pointofinterestId will be given priority.
- *                  If pointofinterestId is not provided, the pointOfInterest data will be used to create a new point of interest. 
- *                  If pointOfInterestId is not provided/invalid and pointOfInterest is not provided, the request will be rejected.
+ *     description: Creates a new event. At least one field from [pointofinterestid, pointofinterest] must be provided. 
+ *                  If both are provided, pointofinterestid will be given priority and pointofinterest will be ignored.
+ *                  If neither is provided, the request will be rejected.
+ *                  If pointofinterestid is not provided but pointofinterest is, its data will be used to create a new point of interest. 
  *     security:
  *       - ApiKeyAuth: []
  *     requestBody:
@@ -32,8 +32,12 @@ const routerEvents = express.Router();
  *         $ref: '#/components/responses/BadRequest_400'
  *       401:
  *         $ref: '#/components/responses/Unauthorized_401'
+ *       404:
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValidBody, async (req, res) => {
     await eventController.createEvent(req, res);
@@ -154,6 +158,8 @@ routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValid
  *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQuery, async (req, res) => {
     await eventController.readAllEvents(req, res);
@@ -192,6 +198,8 @@ routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQ
  *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.readEvent(req, res);
@@ -239,6 +247,8 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
@@ -293,6 +303,8 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.is
  *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.favoriteEvent(req, res);
@@ -337,6 +349,8 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authV
  *         $ref: '#/components/responses/Forbidden_403'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
+ *       502:
+ *         $ref: '#/components/responses/BadGateway_502'
  */
 routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey,  authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);

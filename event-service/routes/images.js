@@ -36,7 +36,7 @@ const routerImages = express.Router();
  *                 description: Allows 1 file per request. MIME type must be image/jpeg with a maximum size of 10MB
  *                 type: string
  *                 format: binary
- *               userId:
+ *               userid:
  *                 type: string
  *                 example: id12345
  *     responses:
@@ -87,7 +87,7 @@ routerImages.post('/images/:uuid', authValidator.isValidAuthKey, dataValidator.i
  *               format: binary
  *         headers:
  *           Content-Disposition:
- *             description: Indicates the content is an downloadable attachment, providing a filename for the attachment
+ *             description: Indicates the content is a downloadable attachment, providing a filename for the attachment
  *             schema:
  *               type: string
  *       400:
@@ -128,7 +128,7 @@ routerImages.get('/images/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               userid:
  *                 type: string
  *                 example: id12345
  *     responses:

@@ -20,7 +20,7 @@ const uploadFile = async (req, res) => {
                 error: {
                     code: '403',
                     message: 'Forbidden',
-                    details: 'Cannot operate with data associated to a non-existing event'
+                    details: 'Cannot associate file data to a non-existing event'
                 }
             });
         }
@@ -32,15 +32,6 @@ const uploadFile = async (req, res) => {
         return res.status(201).setHeader('Location', `v1/images/${req.params.uuid}`).end();
 
     } catch (error) {
-        if (error.code === 'ECONNREFUSED') {
-            return res.status(500).json({
-                error: {
-                    code: '504',
-                    message: 'Gateway Timeout',
-                    details: 'The server did not receive a timely response from the upstream server'
-                }
-            });
-        }
         return res.status(500).json({
             error: {
                 code: '500',
@@ -72,14 +63,16 @@ const downloadFile = async (req, res) => {
                 }
             });
         }
-        return res.status(500).json({
-            error: {
-                code: '500',
-                message: 'Internal Server Error',
-                details: 'An unexpected error has occurred. Please try again later'
+        else {
+            return res.status(500).json({
+                error: {
+                    code: '500',
+                    message: 'Internal Server Error',
+                    details: 'An unexpected error has occurred. Please try again later'
+                }
             }
+            );
         }
-        );
     };
 };
 

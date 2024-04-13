@@ -26,14 +26,52 @@ const config = {
     server: {
         port: process.env.API_PORT || 3000,
         secret: process.env.API_SECRET || 'secret',
-        allowedCategories: ['business', 'conference', 'culture', 'networking', 'technology', 'sports', 'wellness', 'workshop'], // Allowed event categories
-        allowedSearchParams: ['limit', 'offset', 'search', 'name', 'organizer', 'city', 'category', 'startdate', 'beforedate', 'afterdate', 'maxprice' ], // Allowed query parameters
-        allowedGenericSearchParams: ['name', 'organizer', 'category'], // Fields that can be searched using the <search> query parameter
+        allowedCategories: [
+            'business',
+            'conference',
+            'culture',
+            'networking',
+            'technology',
+            'sports',
+            'wellness',
+            'workshop'], // Allowed event categories
+        allowedSearchParams: [
+            'limit',
+            'offset',
+            'search',
+            'name',
+            'organizer',
+            'city',
+            'category',
+            'startdate',
+            'beforedate',
+            'afterdate',
+            'maxprice'], // Allowed query parameters
+        allowedGenericSearchParams: [
+            'name',
+            'organizer',
+            'category'], // Fields that can be searched using the <search> query parameter
         allowedFileType: ['image/jpeg'], // Allowed MIME types for files
         allowedFileMaxSizeMB: 10, // Allowed maximum file size in MB
         allowedFileNumber: 1, // Allowed number of files per request
         priceFormatReq: /^(EUR|USD|GBP)\d+\.\d{2}$/, // Regular expression to validate the price format in a request
-        priceFormatQuery: /^(\d+\.\d{2})$/ // Regular expression to validate the price format in a query parameter
+        priceFormatQuery: /^(\d+\.\d{2})$/, // Regular expression to validate the price format in a query parameter
+        requiredBodyParams: [
+            'userid',
+            'name',
+            'organizer',
+            'street',
+            'doornumber',
+            'postcode',
+            'city',
+            'country',
+            'category',
+            'contact',
+            'startdate',
+            'enddate',
+            'about'
+        ], // Required fields in the request body for POST/PUT
+        requiredPoiParams: ['name', 'latitude', 'longitude'] // Required fields in the Point of Interest structure
     },
 };
 

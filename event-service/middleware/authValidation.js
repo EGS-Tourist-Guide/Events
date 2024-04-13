@@ -63,18 +63,39 @@ const isValidAuthKey = async (req, res, next) => {
 // Verify if who made the request has permission to perform the operation
 const isOperationAllowed = async (req, res, next) => {
     try {
-        if (typeof req.body.userId !== 'string' || !validator.isLength(req.body.userId.trim(), { min: 1, max: 1024 })) {
+        // Check if request body is not missing or empty
+        if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
-                    details: 'Body parameter <userId> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    details: 'Request body is missing or empty'
+                }
+            });
+        }
+        
+        // Check if required body parameter exists and is of the correct type and format
+        if (req.body.userid === undefined) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Request body is missing the required parameter: userid'
+                }
+            });
+        }
+        if (typeof req.body.userid !== 'string' || !validator.isLength(req.body.userid.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
                     example: 'id12345'
                 }
             });
         }
 
-        const userId = req.body.userId;
+        const userId = req.body.userid;
         const eventId = req.params.uuid;
 
         // Check if the user has permission to access the resource (if he was the one that created the resource)
@@ -96,7 +117,7 @@ const isOperationAllowed = async (req, res, next) => {
         }
 
         // If the user is not the original creator of the event
-        if(event.userId !== userId) {
+        if(event.userid !== userId) {
             return res.status(403).json({
                 error: {
                     code: '403',

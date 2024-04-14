@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import amazonS3 from '../services/amazonS3.js';
+import logger from '../logger.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import Event from '../models/event.js';
@@ -32,6 +33,7 @@ const uploadFile = async (req, res) => {
         return res.status(201).setHeader('Location', `v1/files/${req.params.uuid}`).end();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -54,6 +56,7 @@ const downloadFile = async (req, res) => {
         return res.status(200).send(file.buffer);
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         if (error.Code === 'NoSuchKey') {
             return res.status(404).json({
                 error: {
@@ -86,6 +89,7 @@ const deleteFile = async (req, res) => {
         return res.status(204).end();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

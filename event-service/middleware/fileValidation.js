@@ -1,5 +1,6 @@
 import multer from 'multer';
 import config from '../config/config.js';
+import logger from '../logger.js';
 
 // Create a new instance of multer and configure it to handle requests with files according to the service configuration
 const initializeMulter = () => {
@@ -110,6 +111,7 @@ const isValidFile = (req, res, next) => {
         });
     }
     catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

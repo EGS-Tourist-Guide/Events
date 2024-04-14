@@ -1,5 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import config from '../config/config.js';
+import config from './config/config.js';
 
 // Point of Interest schema definition
 const poi = {

@@ -18,7 +18,7 @@ const configServer = async () => {
   const routerFiles = (await import('../event-service/routes/files.js')).default;
   const routerKeys = (await import('../event-service/routes/keys.js')).default;
   const swaggerUI = (await import('swagger-ui-express')).default;
-  const swaggerSpec = (await import('../event-service/swagger/swagger.js')).default;
+  const swaggerSpec = (await import('../event-service/swagger.js')).default;
 
   // Create a new instance of the express server
   const app = express();

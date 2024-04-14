@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import validator from 'validator';
 import config from '../config/config.js';
+import logger from '../logger.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import ApiKey from '../models/key.js';
@@ -50,6 +51,7 @@ const isValidAuthKey = async (req, res, next) => {
         next();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -107,7 +109,7 @@ const isOperationAllowed = async (req, res, next) => {
 
         // If the event does not exist
         if (event === null || event === undefined) {
-            return res.status(404).json({
+            return res.status(403).json({
                 error: {
                     code: '403',
                     message: 'Forbidden',
@@ -131,6 +133,7 @@ const isOperationAllowed = async (req, res, next) => {
         next();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

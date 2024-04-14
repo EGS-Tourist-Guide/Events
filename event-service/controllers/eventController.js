@@ -6,6 +6,7 @@ import dbOperation from '../database/operations.js';
 import calendarService from '../services/calendar.js';
 import poiService from '../services/pointOfInterest.js';
 import amazonS3 from '../services/amazonS3.js';
+import logger from '../logger.js';
 import Event from '../models/event.js';
 import Favorite from '../models/favorite.js';
 
@@ -159,6 +160,7 @@ const createEvent = async (req, res) => {
         return res.status(201).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -258,6 +260,7 @@ const readEvent = async (req, res) => {
         return res.status(200).json(event);
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -340,6 +343,7 @@ const readAllEvents = async (req, res) => {
         return res.status(200).json(events);
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -460,6 +464,7 @@ const updateEvent = async (req, res) => {
         return res.status(200).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -508,6 +513,7 @@ const deleteEvent = async (req, res) => {
         return res.status(204).end();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -581,6 +587,7 @@ const favoriteEvent = async (req, res) => {
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

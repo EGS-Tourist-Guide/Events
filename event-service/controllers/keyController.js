@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../config/config.js';
+import logger from '../logger.js';
 import dbConnection from '../database/connection.js';
 import dbOperation from '../database/operations.js';
 import ApiKey from '../models/key.js';
@@ -17,7 +18,7 @@ const generateKey = async (req, res) => {
             _id: hashedKey,
             appId: app_id,
         };
-        
+
         // Open a new database connection if it is not already open
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
@@ -38,6 +39,7 @@ const generateKey = async (req, res) => {
         });
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -73,6 +75,7 @@ const revokeKey = async (req, res) => {
         });
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

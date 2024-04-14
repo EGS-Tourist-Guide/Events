@@ -1,5 +1,6 @@
 import validator from 'validator';
 import config from '../config/config.js';
+import logger from '../logger.js';
 
 // Verify if request contains a valid UUIDv4 parameter
 const isValidUUID = (req, res, next) => {
@@ -23,6 +24,7 @@ const isValidUUID = (req, res, next) => {
         next();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -205,6 +207,7 @@ const isValidQuery = (req, res, next) => {
 
     }
     catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -537,6 +540,7 @@ const isValidBody = (req, res, next) => {
         next();
 
     } catch (error) {
+        logger.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

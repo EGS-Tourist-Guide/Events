@@ -24,7 +24,11 @@ const isValidUUID = (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -55,7 +59,7 @@ const isValidQuery = (req, res, next) => {
         }
 
         // Check if valid query parameters are of the correct type and format
-        if (req.query.limit !== undefined) {
+        if (req.query.limit !== null && req.query.limit !== undefined) {
             const limit = Number.parseInt(req.query.limit);
             if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
                 return res.status(400).json({
@@ -69,7 +73,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.offset !== undefined) {
+        if (req.query.offset !== null && req.query.offset !== undefined) {
             const offset = Number.parseInt(req.query.offset);
             if (isNaN(offset) || !Number.isInteger(offset) || offset < 0) {
                 return res.status(400).json({
@@ -83,7 +87,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.search !== undefined) {
+        if (req.query.search !== null && req.query.search !== undefined) {
             if (typeof req.query.search !== 'string' || !validator.isLength(req.query.search.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
@@ -96,7 +100,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.name !== undefined) {
+        if (req.query.name !== null && req.query.name !== undefined) {
             if (typeof req.query.name !== 'string' || !validator.isLength(req.query.name.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
@@ -109,7 +113,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.organizer !== undefined) {
+        if (req.query.organizer !== null && req.query.organizer !== undefined) {
             if (typeof req.query.organizer !== 'string' || !validator.isLength(req.query.organizer.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
@@ -122,7 +126,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.city !== undefined) {
+        if (req.query.city !== null && req.query.city !== undefined) {
             if (typeof req.query.city !== 'string' || !validator.isLength(req.query.city.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
@@ -135,7 +139,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.category !== undefined) {
+        if (req.query.category !== null && req.query.category !== undefined) {
             const allowedOptions = config.server.allowedCategories;
             if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), allowedOptions)) {
                 return res.status(400).json({
@@ -149,20 +153,22 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.startdate !== undefined) {
-            if (typeof req.query.startdate !== 'string' || !validator.isRFC3339(req.query.startdate)) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Query parameter <startDate> must be a string in the RFC 3339 format',
-                        example: 'startDate=2024-12-31T23:59:59Z'
-                    }
-                });
+        if (req.query.startdate !== null && req.query.startdate !== undefined) {
+            if (req.query.startdate) {
+                if (typeof req.query.startdate !== 'string' || !validator.isRFC3339(req.query.startdate)) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'Query parameter <startDate> must be a string in the RFC 3339 format',
+                            example: 'startDate=2024-12-31T23:59:59Z'
+                        }
+                    });
+                }
             }
         }
 
-        if (req.query.beforedate !== undefined) {
+        if (req.query.beforedate !== null && req.query.beforedate !== undefined) {
             if (typeof req.query.beforedate !== 'string' || !validator.isRFC3339(req.query.beforedate)) {
                 return res.status(400).json({
                     error: {
@@ -175,7 +181,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.afterdate !== undefined) {
+        if (req.query.afterdate !== null && req.query.afterdate !== undefined) {
             if (typeof req.query.afterdate !== 'string' || !validator.isRFC3339(req.query.afterdate)) {
                 return res.status(400).json({
                     error: {
@@ -188,7 +194,7 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.maxprice !== undefined) {
+        if (req.query.maxprice !== null && req.query.maxprice !== undefined) {
             const pattern = config.server.priceFormatQuery;
             if (typeof req.query.maxprice !== 'string' || !pattern.test(req.query.maxprice)) {
                 return res.status(400).json({
@@ -207,7 +213,11 @@ const isValidQuery = (req, res, next) => {
 
     }
     catch (error) {
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -235,7 +245,7 @@ const isValidBody = (req, res, next) => {
         // Check if all required body parameters are present in the request body
         const requiredParameters = config.server.requiredBodyParams;
         for (const param of requiredParameters) {
-            if (req.body[param] === undefined) {
+            if (!req.body[param]) {
                 return res.status(400).json({
                     error: {
                         code: '400',
@@ -246,7 +256,7 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointofinterestid === undefined && req.body.pointofinterest === undefined) {
+        if ((req.body.pointofinterestid === null || req.body.pointofinterestid === undefined) && (req.body.pointofinterest === null || req.body.pointofinterest === undefined)) {
             return res.status(400).json({
                 error: {
                     code: '400',
@@ -402,7 +412,7 @@ const isValidBody = (req, res, next) => {
         }
 
         // Check if optional body parameters, should they exist, are of the correct type and format
-        if (req.body.price !== undefined) {
+        if (req.body.price !== null && req.body.price !== undefined) {
             const pattern = config.server.priceFormatReq;
             if (typeof req.body.price !== 'string' || !pattern.test(req.body.price)) {
                 return res.status(400).json({
@@ -416,7 +426,7 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.maxparticipants !== undefined) {
+        if (req.body.maxparticipants !== null && req.body.maxparticipants !== undefined) {
             if (typeof req.body.maxparticipants !== 'number' || !Number.isInteger(req.body.maxparticipants) || req.body.maxparticipants < 0 || req.body.maxparticipants > 9999999999) {
                 return res.status(400).json({
                     error: {
@@ -429,7 +439,7 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.currentparticipants !== undefined) {
+        if (req.body.currentparticipants !== null && req.body.currentparticipants !== undefined) {
             if (typeof req.body.currentparticipants !== 'number' || !Number.isInteger(req.body.currentparticipants) || req.body.currentparticipants < 0 || req.body.currentparticipants > 9999999999) {
                 return res.status(400).json({
                     error: {
@@ -442,7 +452,7 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointofinterestid !== undefined) {
+        if (req.body.pointofinterestid !== null && req.body.pointofinterestid !== undefined) {
             if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
                 return res.status(400).json({
                     error: {
@@ -455,84 +465,90 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointofinterest !== undefined) {
-            // Check if all required parameters were given
-            const requiredFields = config.server.requiredPoiParams;
-            for (const param of requiredFields) {
-                if (req.body.pointofinterest[param] === undefined) {
+        if (req.body.pointofinterest !== null && req.body.pointofinterest !== undefined) {
+            if (req.body.pointofinterest) {
+                // Check if all required parameters were given
+                const requiredParams = config.server.requiredPoiParams;
+                for (const param of requiredParams) {
+                    if (!req.body.pointofinterest[param]) {
+                        return res.status(400).json({
+                            error: {
+                                code: '400',
+                                message: 'Bad Request',
+                                details: `pointofinterest was given but is missing the required parameter: ${param}`
+                            }
+                        });
+                    }
+                }
+                // Check if required parameters are of the correct type and format
+                if (typeof req.body.pointofinterest.name !== 'string' || !validator.isLength(req.body.pointofinterest.name.trim(), { min: 1, max: 256 })) {
                     return res.status(400).json({
                         error: {
                             code: '400',
                             message: 'Bad Request',
-                            details: `pointofinterest was given but is missing the required parameter: ${param}`
+                            details: 'pointofinterest parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                            example: 'PoI Name'
                         }
                     });
                 }
-            }
-            // Check if required parameters are of the correct type and format
-            if (typeof req.body.pointofinterest.name !== 'string' || !validator.isLength(req.body.pointofinterest.name.trim(), { min: 1, max: 256 })) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'pointofinterest parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'PoI Name'
-                    }
-                });
-            }
-            if (typeof req.body.pointofinterest.latitude !== 'number' || req.body.pointofinterest.latitude < -90 || req.body.pointofinterest.latitude > 90) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
-                        example: '38.71667'
-                    }
-                });
-            }
-            if (typeof req.body.pointofinterest.longitude !== 'number' || req.body.pointofinterest.longitude < -180 || req.body.pointofinterest.longitude > 180) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'pointofinterest parameter <longitude> must be a number in the interval [-180, 180]',
-                        example: '38.71667'
-                    }
-                });
-            }
+                if (typeof req.body.pointofinterest.latitude !== 'number' || req.body.pointofinterest.latitude < -90 || req.body.pointofinterest.latitude > 90) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
+                            example: '38.71667'
+                        }
+                    });
+                }
+                if (typeof req.body.pointofinterest.longitude !== 'number' || req.body.pointofinterest.longitude < -180 || req.body.pointofinterest.longitude > 180) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'pointofinterest parameter <longitude> must be a number in the interval [-180, 180]',
+                            example: '38.71667'
+                        }
+                    });
+                }
 
-            // Check if optional parameters, should they exist, are of the correct type and format
-            if (typeof req.body.pointofinterest.category !== undefined) {
-                if (typeof req.body.pointofinterest.category !== 'string' || !validator.isLength(req.body.pointofinterest.category.trim(), { min: 1, max: 256 })) {
-                    return res.status(400).json({
-                        error: {
-                            code: '400',
-                            message: 'Bad Request',
-                            details: 'pointofinterest parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                            example: 'PoI Category'
-                        }
-                    });
+                // Check if optional parameters, should they exist, are of the correct type and format
+                if (req.body.pointofinterest.category !== null && req.body.pointofinterest.category !== undefined) {
+                    if (typeof req.body.pointofinterest.category !== 'string' || !validator.isLength(req.body.pointofinterest.category.trim(), { min: 1, max: 256 })) {
+                        return res.status(400).json({
+                            error: {
+                                code: '400',
+                                message: 'Bad Request',
+                                details: 'pointofinterest parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                                example: 'PoI Category'
+                            }
+                        });
+                    }
                 }
-            }
-            if (typeof req.body.pointofinterest.description !== 'string' || !validator.isLength(req.body.pointofinterest.description.trim(), { min: 1, max: 2048 })) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'pointofinterest parameter <description> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
-                        example: 'This is a description of the point of interest'
+                if (req.body.pointofinterest.description !== null && req.body.pointofinterest.description !== undefined) {
+                    if (typeof req.body.pointofinterest.description !== 'string' || !validator.isLength(req.body.pointofinterest.description.trim(), { min: 1, max: 2048 })) {
+                        return res.status(400).json({
+                            error: {
+                                code: '400',
+                                message: 'Bad Request',
+                                details: 'pointofinterest parameter <description> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
+                                example: 'This is a description of the point of interest'
+                            }
+                        });
                     }
-                });
-            }
-            if (typeof req.body.pointofinterest.thumbnail !== 'string' || !validator.isURL(req.body.pointofinterest.thumbnail)) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'pointofinterest parameter <thumbnail> must be a string in a valid url format',
-                        example: 'https://example.com/image.jpg'
+                }
+                if (req.body.pointofinterest.thumbnail !== null && req.body.pointofinterest.thumbnail !== undefined) {
+                    if (typeof req.body.pointofinterest.thumbnail !== 'string' || !validator.isURL(req.body.pointofinterest.thumbnail)) {
+                        return res.status(400).json({
+                            error: {
+                                code: '400',
+                                message: 'Bad Request',
+                                details: 'pointofinterest parameter <thumbnail> must be a string in a valid url format',
+                                example: 'https://example.com/image.jpg'
+                            }
+                        });
                     }
-                });
+                }
             }
         }
 
@@ -540,7 +556,11 @@ const isValidBody = (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

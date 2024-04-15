@@ -11,11 +11,8 @@ import Event from '../models/event.js';
 // Verify if request authentication key is valid
 const isValidAuthKey = async (req, res, next) => {
     try {
-
         // Check if the request contains header with the API key
-        const authHeader = req.headers['service-api-key']
-
-        if (authHeader === undefined) {
+        if (!req.headers['service-api-key']) {
             res.setHeader('WWW-Authenticate', 'Basic realm="service-api-key"');
             return res.status(401).json({
                 error: {
@@ -36,7 +33,7 @@ const isValidAuthKey = async (req, res, next) => {
 
         const validUser = await dbOperation.readDocument(ApiKey, hashedKey);
 
-        if (validUser === null || validUser === undefined || !validUser.active) {
+        if (!validUser || !validUser.active) {
             res.setHeader('WWW-Authenticate', 'Basic realm="service-api-key"');
             return res.status(401).json({
                 error: {
@@ -51,7 +48,11 @@ const isValidAuthKey = async (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -75,9 +76,9 @@ const isOperationAllowed = async (req, res, next) => {
                 }
             });
         }
-        
+
         // Check if required body parameter exists and is of the correct type and format
-        if (req.body.userid === undefined) {
+        if (req.body.userid === null || req.body.userid === undefined) {
             return res.status(400).json({
                 error: {
                     code: '400',
@@ -97,29 +98,26 @@ const isOperationAllowed = async (req, res, next) => {
             });
         }
 
-        const userId = req.body.userid;
-        const eventId = req.params.uuid;
-
         // Check if the user has permission to access the resource (if he was the one that created the resource)
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
         }
 
-        const event = await dbOperation.readDocument(Event, eventId);
+        const event = await dbOperation.readDocument(Event, req.params.uuid);
 
         // If the event does not exist
-        if (event === null || event === undefined) {
+        if (!event) {
             return res.status(403).json({
                 error: {
                     code: '403',
                     message: 'Forbidden',
-                    details: 'Cannot operate with data associated to a non-existing event'
+                    details: 'Cannot operate over a non-existing event'
                 }
             });
         }
 
         // If the user is not the original creator of the event
-        if(event.userid !== userId) {
+        if (event.userid !== req.body.userid) {
             return res.status(403).json({
                 error: {
                     code: '403',
@@ -133,7 +131,11 @@ const isOperationAllowed = async (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

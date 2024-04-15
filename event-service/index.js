@@ -16,7 +16,6 @@ const loadEnvVariables = async () => {
 
 // Configure the server
 const configServer = async () => {
-  const logger = (await import('../event-service/logger.js')).default;
   const config = (await import('../event-service/config/config.js')).default;
   const dbConnection = (await import('../event-service/database/connection.js')).default;
   const routerEvents = (await import('../event-service/routes/events.js')).default;
@@ -79,6 +78,6 @@ try {
   await configServer();
 }
 catch (error) {
-  console.log('An error occurred while starting the server:\n')
+  console.log('\nAn error occurred while starting the server:\n')
   console.error(error);
 }

@@ -24,18 +24,17 @@ const createEvent = async (req, res) => {
         let eventToCreate = {
             _id: newEventId,
             userid: req.body.userid,
-            organizer: req.body.organizer,
             category: req.body.category,
             contact: req.body.contact,
         };
-        if (req.body.price !== undefined) {
+        if (req.body.price !== null && req.body.price !== undefined) {
             eventToCreate.currency = req.body.price.toString().substring(0, 3);
             eventToCreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
         }
-        if (req.body.maxparticipants !== undefined) {
+        if (req.body.maxparticipants !== null && req.body.maxparticipants !== undefined) {
             eventToCreate.maxparticipants = req.body.maxparticipants;
         }
-        if (req.body.currentparticipants !== undefined) {
+        if (req.body.currentparticipants !== null && req.body.currentparticipants !== undefined) {
             eventToCreate.currentparticipants = req.body.currentparticipants;
         }
 
@@ -50,7 +49,7 @@ const createEvent = async (req, res) => {
 
         // Manage calendar
         const calendar = await calendarService.createUserCalendar(req.body.userid);
-        if (calendar === null || calendar === undefined) {
+        if (!calendar) {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -62,7 +61,7 @@ const createEvent = async (req, res) => {
         eventToCreate.calendarid = calendar.calendarId;
 
         // Manage point of interest
-        if (req.body.pointofinterestid !== undefined) {
+        if (req.body.pointofinterestid !== null && req.body.pointofinterestid !== undefined) {
             const queryString = `query findPOIs {
                 searchPointsOfInterest(
                   apiKey: "${config.poiService.apikey}",
@@ -75,7 +74,7 @@ const createEvent = async (req, res) => {
               }`;
 
             const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
-            if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+            if (!poi || poi.data.searchPointsOfInterest.length === 0) {
                 return res.status(404).json({
                     error: {
                         code: '404',
@@ -87,7 +86,7 @@ const createEvent = async (req, res) => {
             eventToCreate.pointofinterestid = req.body.pointofinterestid;
 
             const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
-            if (calendarEvent === null || calendarEvent === undefined) {
+            if (!calendarEvent) {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -110,13 +109,13 @@ const createEvent = async (req, res) => {
                 street: req.body.street + ' ' + req.body.doornumber,
                 postcode: req.body.postcode,
             }
-            if (req.body.pointofinterest.category !== undefined) {
+            if (req.body.pointofinterest.category !== null && req.body.pointofinterest.category !== undefined) {
                 poiTocreate.category = req.body.pointofinterest.category;
             }
-            if (req.body.pointofinterest.description !== undefined) {
+            if (req.body.pointofinterest.description !== null && req.body.pointofinterest.description !== undefined) {
                 poiTocreate.description = req.body.pointofinterest.description;
             }
-            if (req.body.pointofinterest.thumbnail !== undefined) {
+            if (req.body.pointofinterest.thumbnail !== undefined && req.body.pointofinterest.thumbnail !== null) {
                 poiTocreate.thumbnail = req.body.pointofinterest.thumbnail;
             }
 
@@ -131,7 +130,7 @@ const createEvent = async (req, res) => {
                   }
               }`;
             const poi = await poiService.performOperation(mutationString); // Create poi in the point of interest service
-            if (poi === null || poi === undefined) {
+            if (!poi) {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -143,7 +142,7 @@ const createEvent = async (req, res) => {
             eventToCreate.pointofinterestid = poi.data.createPointOfInterest.poi._id;
 
             const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
-            if (calendarEvent === null || calendarEvent === undefined) {
+            if (!calendarEvent) {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -160,8 +159,12 @@ const createEvent = async (req, res) => {
         return res.status(201).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -194,7 +197,7 @@ const readEvent = async (req, res) => {
 
         // Get information from the calendar service
         const calendarEvent = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
-        if (calendarEvent === null || calendarEvent === undefined || calendarEvent.length === 0) {
+        if (!calendarEvent || calendarEvent.length === 0) {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -230,7 +233,7 @@ const readEvent = async (req, res) => {
           }`;
 
         const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
-        if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+        if (!poi || poi.data.searchPointsOfInterest.length === 0) {
             return res.status(404).json({
                 error: {
                     code: '404',
@@ -261,8 +264,12 @@ const readEvent = async (req, res) => {
         return res.status(200).json(event);
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -345,8 +352,12 @@ const readAllEvents = async (req, res) => {
         return res.status(200).json(events);
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -383,14 +394,14 @@ const updateEvent = async (req, res) => {
             category: req.body.category,
             contact: req.body.contact,
         };
-        if (req.body.price !== undefined) {
+        if (req.body.price !== null && req.body.price !== undefined) {
             eventToCreate.currency = req.body.price.toString().substring(0, 3);
             eventToCreate.price = req.body.price.toString().replace('EUR', '').replace('USD', '').replace('GBP', '');
         }
-        if (req.body.maxparticipants !== undefined) {
+        if (req.body.maxparticipants !== null && req.body.maxparticipants !== undefined) {
             eventToCreate.maxparticipants = req.body.maxparticipants;
         }
-        if (req.body.currentparticipants !== undefined) {
+        if (req.body.currentparticipants !== null && req.body.currentparticipants !== undefined) {
             eventToCreate.currentparticipants = req.body.currentparticipants;
         }
 
@@ -404,7 +415,7 @@ const updateEvent = async (req, res) => {
 
         // Manage calendar
         const calendar = await calendarService.createUserCalendar(req.body.userid);
-        if (calendar === null || calendar === undefined) {
+        if (!calendar) {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -428,7 +439,7 @@ const updateEvent = async (req, res) => {
             }`;
 
         const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
-        if (poi === null || poi === undefined || poi.data.searchPointsOfInterest.length === 0) {
+        if (!poi || poi.data.searchPointsOfInterest.length === 0) {
             return res.status(404).json({
                 error: {
                     code: '404',
@@ -440,7 +451,7 @@ const updateEvent = async (req, res) => {
         eventToUpdate.pointofinterestid = req.body.pointofinterestid;
 
         const calendarEvent = await calendarService.updateEventInCalendar(eventToUpdate.calendarid, req.params.uuid, calendarEventToUpdate); // Update event in the calendar service
-        if (calendarEvent === null || calendarEvent === undefined) {
+        if (!calendarEvent) {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -453,7 +464,7 @@ const updateEvent = async (req, res) => {
         result = await dbOperation.updateDocument(Event, eventToUpdate);  // Update event in event service
 
         // If the event does not exist
-        if (result === null) {
+        if (!result) {
             return res.status(404).json({
                 error: {
                     code: '404',
@@ -467,8 +478,12 @@ const updateEvent = async (req, res) => {
         return res.status(200).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -497,7 +512,7 @@ const deleteEvent = async (req, res) => {
         // Delete the event from the calendar service
         if (event) {
             const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid)
-            if (removed === null || removed === undefined) {
+            if (!removed) {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -517,8 +532,12 @@ const deleteEvent = async (req, res) => {
         return res.status(204).end();
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -554,7 +573,7 @@ const favoriteEvent = async (req, res) => {
         const favorite = await dbOperation.readAllDocuments(Favorite, query, 1, 0);
 
         // If he has never favorited the event, create a new favorite entry and increment the event favorites count by 1, using a transaction
-        if (favorite === null || favorite === undefined || favorite.length === 0) {
+        if (!favorite || favorite.length === 0) {
             const newFavorite = {
                 eventId: req.params.uuid,
                 userId: req.body.userId,
@@ -568,7 +587,7 @@ const favoriteEvent = async (req, res) => {
             await session.commitTransaction();
             session.endSession();
         }
-        // If user has previously favorited the event before, update the favorite entry and the event favorites count accordingly, using a transaction
+        // If user has previously favorited the event, update the favorite entry and the event favorites count accordingly, using a transaction
         else {
             const newFavorite = { favoriteStatus: req.body.favoriteStatus };
             const session = await mongoose.startSession();
@@ -592,8 +611,12 @@ const favoriteEvent = async (req, res) => {
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            messageType: error.code,
+            message: error.stack,
+        }
+        logger.logError.error(msg); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

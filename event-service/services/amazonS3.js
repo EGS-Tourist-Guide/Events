@@ -13,36 +13,62 @@ const cred = {
 }
 
 // Upload a file to the storage service
-const uploadFile = async (fileData, newFileName) => {
+const uploadFile = async (fileData, newFileName, maxRetries = 2, retryDelay = 250, timeout = 30000) => {
     try {
         // Generate the file name
         const fileName = 'event_' + newFileName + '.jpeg';
 
         // Upload the file
         const client = new S3Client(cred);
-        await client.send(new PutObjectCommand({
+        const response = client.send(new PutObjectCommand({
             Body: fileData.buffer,
             Bucket: config.amazonS3.bucket,
-            Key: fileName
+            Key: fileName,
         }));
 
+        // Wait for either the response or the timeout to occur
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const timeoutError = new Error('uploadFile from ../services/amazonS3.js timed out');
+                timeoutError.code = 'ETIMEOUT';
+                reject(timeoutError);
+            }, timeout);
+        });
+        await Promise.race([response, timeoutPromise]);
+
     } catch (error) {
-        throw error;
+        if (maxRetries > 0) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return uploadFile(fileData, newFileName, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else {
+            throw error;
+        }
     }
 };
 
 // Download a file from the storage service
-const downloadFile = async (newFileName) => {
+const downloadFile = async (newFileName, maxRetries = 2, retryDelay = 250, timeout = 30000) => {
     try {
         // Generate the file name
         const fileName = 'event_' + newFileName + '.jpeg';
 
         // Download the file data
         const client = new S3Client(cred);
-        const result = await client.send(new GetObjectCommand({
+        const response = client.send(new GetObjectCommand({
             Bucket: config.amazonS3.bucket,
             Key: fileName,
         }));
+
+        // Wait for either the response or the timeout to occur
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const timeoutError = new Error('downloadFile from ../services/amazonS3.js timed out');
+                timeoutError.code = 'ETIMEOUT';
+                reject(timeoutError);
+            }, timeout);
+        });
+        await Promise.race([response, timeoutPromise]);
 
         // Convert the file data to a buffer and return it
         const chunks = [];
@@ -57,26 +83,49 @@ const downloadFile = async (newFileName) => {
             type: 'image/jpeg'
         };
 
+
     } catch (error) {
-        throw error;
+        if (maxRetries > 0) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return downloadFile(newFileName, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else {
+            throw error;
+        }
     }
 };
 
 // Delete a file from the storage service
-const deleteFile = async (fileName) => {
+const deleteFile = async (fileName, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         // Generate the file name
         const fileToDelete = 'event_' + fileName + '.jpeg';
 
         // Delete the file
         const client = new S3Client(cred);
-        await client.send(new DeleteObjectCommand({
+        const response = client.send(new DeleteObjectCommand({
             Bucket: config.amazonS3.bucket,
             Key: fileToDelete,
         }));
 
+        // Wait for either the response or the timeout to occur
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const timeoutError = new Error('deleteFile from ../services/amazonS3.js timed out');
+                timeoutError.code = 'ETIMEOUT';
+                reject(timeoutError);
+            }, timeout);
+        });
+        await Promise.race([response, timeoutPromise]);
+
     } catch (error) {
-        throw error;
+        if (maxRetries > 0) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return deleteFile(fileName, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else {
+            throw error;
+        }
     }
 };
 

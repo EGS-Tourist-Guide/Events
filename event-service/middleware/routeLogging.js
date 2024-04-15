@@ -8,9 +8,11 @@ const request = async (req, res, next) => {
     req.logID = uuidv4();
     try {
         logger.logInfo.info({
-            message: `[REQUEST] ${req.method} ${req.originalUrl}`,
             messageID: req.logID,
+            messageType: 'REQUEST',
+            message: `${req.method} ${req.originalUrl}`,
             fromIP: req.ip,
+            content: req.headers['content-type'],
             params: req.params,
             query: req.query,
             body: req.body
@@ -19,8 +21,11 @@ const request = async (req, res, next) => {
         next();
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
     }
 };
 
@@ -28,8 +33,9 @@ const response = async (req, res, next) => {
     try {
         res.on('finish', () => {
             logger.logInfo.info({
-                message: `[RESPONSE] ${req.method} ${req.originalUrl}`,
                 messageID: req.logID,
+                messageType: 'RESPONSE',
+                message: `${req.method} ${req.originalUrl}`,
                 toIP: req.ip,
                 status_code: res.statusCode,
             });
@@ -38,8 +44,11 @@ const response = async (req, res, next) => {
         next();
 
     } catch (error) {
-        error.messageID = req.logID;
-        logger.logError.error(error); // Write to error log file
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
     }
 }
 

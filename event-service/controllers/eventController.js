@@ -84,7 +84,7 @@ const createEvent = async (req, res) => {
                     }
                 });
             }
-            eventToCreate.pointofinterestid = req.body.pointofinterestid; 
+            eventToCreate.pointofinterestid = req.body.pointofinterestid;
 
             const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
             if (calendarEvent === null || calendarEvent === undefined) {
@@ -140,8 +140,8 @@ const createEvent = async (req, res) => {
                     }
                 });
             }
-            eventToCreate.pointofinterestid = poi.data.createPointOfInterest.poi._id; 
-            
+            eventToCreate.pointofinterestid = poi.data.createPointOfInterest.poi._id;
+
             const calendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate); // Create event in the calendar service
             if (calendarEvent === null || calendarEvent === undefined) {
                 return res.status(502).json({
@@ -160,7 +160,8 @@ const createEvent = async (req, res) => {
         return res.status(201).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -192,7 +193,7 @@ const readEvent = async (req, res) => {
         }
 
         // Get information from the calendar service
-        const calendarEvent = await calendarService.getEventsFromCalendar(event.calendarid, {eventId: req.params.uuid});
+        const calendarEvent = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
         if (calendarEvent === null || calendarEvent === undefined || calendarEvent.length === 0) {
             return res.status(502).json({
                 error: {
@@ -260,7 +261,8 @@ const readEvent = async (req, res) => {
         return res.status(200).json(event);
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -343,7 +345,8 @@ const readAllEvents = async (req, res) => {
         return res.status(200).json(events);
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -434,7 +437,7 @@ const updateEvent = async (req, res) => {
                 }
             });
         }
-        eventToUpdate.pointofinterestid = req.body.pointofinterestid; 
+        eventToUpdate.pointofinterestid = req.body.pointofinterestid;
 
         const calendarEvent = await calendarService.updateEventInCalendar(eventToUpdate.calendarid, req.params.uuid, calendarEventToUpdate); // Update event in the calendar service
         if (calendarEvent === null || calendarEvent === undefined) {
@@ -464,7 +467,8 @@ const updateEvent = async (req, res) => {
         return res.status(200).setHeader('Location', `v1/events/${result._id}`).end();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -489,7 +493,7 @@ const deleteEvent = async (req, res) => {
         if (event) {
             await amazonS3.deleteFile(req.params.uuid)
         }
-                
+
         // Delete the event from the calendar service
         if (event) {
             const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid)
@@ -513,7 +517,8 @@ const deleteEvent = async (req, res) => {
         return res.status(204).end();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -587,7 +592,8 @@ const favoriteEvent = async (req, res) => {
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

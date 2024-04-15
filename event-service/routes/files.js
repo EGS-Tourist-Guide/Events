@@ -1,4 +1,5 @@
 import express from 'express';
+import routeLogger from '../middleware/routeLogging.js';
 import authValidator from '../middleware/authValidation.js';
 import dataValidator from '../middleware/dataValidation.js';
 import fileValidator from '../middleware/fileValidation.js';
@@ -55,7 +56,7 @@ const routerFiles = express.Router();
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerFiles.post('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
+routerFiles.post('/files/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidUUID, fileValidator.isValidFile, authValidator.isOperationAllowed, async (req, res) => {
     await fileController.uploadFile(req, res);
 });
 
@@ -99,7 +100,7 @@ routerFiles.post('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isV
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerFiles.get('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+routerFiles.get('/files/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await fileController.downloadFile(req, res);
 });
 
@@ -143,7 +144,7 @@ routerFiles.get('/files/:uuid', authValidator.isValidAuthKey, dataValidator.isVa
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerFiles.delete('/files/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
+routerFiles.delete('/files/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await fileController.deleteFile(req, res);
 });
 

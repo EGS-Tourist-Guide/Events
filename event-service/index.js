@@ -6,12 +6,17 @@ import cors from 'cors';
 
 // Load environment variables
 const loadEnvVariables = async () => {
-  const __dirname = import.meta.dirname;
-  dotenv.config({ path: path.join(__dirname, '../event-service/.env') });
+  try {
+    const __dirname = import.meta.dirname;
+    dotenv.config({ path: path.join(__dirname, '../event-service/.env') });
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Configure the server
 const configServer = async () => {
+  const logger = (await import('../event-service/logger.js')).default;
   const config = (await import('../event-service/config/config.js')).default;
   const dbConnection = (await import('../event-service/database/connection.js')).default;
   const routerEvents = (await import('../event-service/routes/events.js')).default;
@@ -54,9 +59,8 @@ const configServer = async () => {
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
-
   } catch (error) {
-    console.error(error);
+    throw error;
   }
 
   // Handle process termination
@@ -70,5 +74,11 @@ const configServer = async () => {
 };
 
 // Start the server
-await loadEnvVariables();
-await configServer();
+try {
+  await loadEnvVariables();
+  await configServer();
+}
+catch (error) {
+  console.log('An error occurred while starting the server:\n')
+  console.error(error);
+}

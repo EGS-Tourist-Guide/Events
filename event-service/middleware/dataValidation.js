@@ -24,7 +24,7 @@ const isValidUUID = (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -207,7 +207,7 @@ const isValidQuery = (req, res, next) => {
 
     }
     catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -540,7 +540,7 @@ const isValidBody = (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

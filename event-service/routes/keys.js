@@ -1,4 +1,5 @@
 import express from 'express';
+import routeLogger from '../middleware/routeLogging.js';
 import authValidator from '../middleware/authValidation.js';
 import keyController from '../controllers/keyController.js';
 
@@ -37,7 +38,7 @@ const routerKeys = express.Router();
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerKeys.post('/keys',  async (req, res) => {
+routerKeys.post('/keys', routeLogger.request, routeLogger.response, async (req, res) => {
     await keyController.generateKey(req, res);
 });
 
@@ -73,7 +74,7 @@ routerKeys.post('/keys',  async (req, res) => {
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */
-routerKeys.patch('/keys', authValidator.isValidAuthKey, async (req, res) => {
+routerKeys.patch('/keys', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, async (req, res) => {
     await keyController.revokeKey(req, res);
 });
 

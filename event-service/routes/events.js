@@ -1,9 +1,10 @@
 import express from 'express';
+import routeLogger from '../middleware/routeLogging.js';
 import authValidator from '../middleware/authValidation.js';
 import dataValidator from '../middleware/dataValidation.js';
 import eventController from '../controllers/eventController.js';
 
-// Create a new instance of the express router 
+// Create a new instance of the express router
 const routerEvents = express.Router();
 
 /**
@@ -39,7 +40,7 @@ const routerEvents = express.Router();
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValidBody, async (req, res) => {
+routerEvents.post('/events', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidBody, async (req, res) => {
     await eventController.createEvent(req, res);
 });
 
@@ -161,7 +162,7 @@ routerEvents.post('/events', authValidator.isValidAuthKey, dataValidator.isValid
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQuery, async (req, res) => {
+routerEvents.get('/events', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidQuery, async (req, res) => {
     await eventController.readAllEvents(req, res);
 });
 
@@ -201,7 +202,7 @@ routerEvents.get('/events', authValidator.isValidAuthKey, dataValidator.isValidQ
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidUUID, async (req, res) => {
     await eventController.readEvent(req, res);
 });
 
@@ -250,7 +251,7 @@ routerEvents.get('/events/:uuid', authValidator.isValidAuthKey, dataValidator.is
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
+routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, dataValidator.isValidBody, async (req, res) => {
     await eventController.updateEvent(req, res);
 });
 
@@ -306,7 +307,7 @@ routerEvents.put('/events/:uuid', authValidator.isValidAuthKey, authValidator.is
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.favoriteEvent(req, res);
 });
 
@@ -352,7 +353,7 @@ routerEvents.patch('/events/:uuid/favorite', authValidator.isValidAuthKey, authV
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.delete('/events/:uuid', authValidator.isValidAuthKey,  authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.delete('/events/:uuid', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey,  authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
     await eventController.deleteEvent(req, res);
 });
 

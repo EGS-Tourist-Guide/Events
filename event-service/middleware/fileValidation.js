@@ -111,7 +111,7 @@ const isValidFile = (req, res, next) => {
         });
     }
     catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

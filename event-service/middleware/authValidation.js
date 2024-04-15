@@ -51,7 +51,7 @@ const isValidAuthKey = async (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -133,7 +133,7 @@ const isOperationAllowed = async (req, res, next) => {
         next();
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

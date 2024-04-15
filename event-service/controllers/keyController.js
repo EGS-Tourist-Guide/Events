@@ -39,7 +39,8 @@ const generateKey = async (req, res) => {
         });
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',
@@ -75,7 +76,8 @@ const revokeKey = async (req, res) => {
         });
 
     } catch (error) {
-        logger.error(error); // Write to error log file
+        error.messageID = req.logID;
+        logger.logError.error(error); // Write to error log file
         return res.status(500).json({
             error: {
                 code: '500',

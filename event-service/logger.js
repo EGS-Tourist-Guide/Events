@@ -1,14 +1,8 @@
-import  *  as  winston  from  'winston';
-import  'winston-daily-rotate-file';
+import *  as  winston from 'winston';
+import 'winston-daily-rotate-file';
 
-// Configure logger. Will create new log file for each day
-const transport = new winston.transports.DailyRotateFile({
-    filename: 'event-service/output-logs/errors_%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-  });
-
-const logger = winston.createLogger({
+// Create error logger instance
+const logError = winston.createLogger({
     level: 'error',
     format: winston.format.combine(
         winston.format.timestamp({
@@ -20,7 +14,43 @@ const logger = winston.createLogger({
         winston.format.prettyPrint()
     ),
     defaultMeta: { service: 'Event-service' },
-    transports: [transport]
+    transports: [
+        new winston.transports.DailyRotateFile({
+            filename: 'event-service/output-logs/error/error_%DATE%.log',
+            datePattern: 'YYYY-MM-DD',
+            zippedArchive: true,
+            colorize: true,
+        })
+    ]
 });
+
+// Create info logger instance
+const logInfo = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss'
+        }),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json(),
+        winston.format.prettyPrint()
+    ),
+    defaultMeta: { service: 'Event-service' },
+    transports: [
+        new winston.transports.DailyRotateFile({
+            filename: 'event-service/output-logs/info/info_%DATE%.log',
+            datePattern: 'YYYY-MM-DD',
+            zippedArchive: true,
+            colorize: true,
+        })
+    ]
+});
+
+// Export
+const logger = {
+    logError,
+    logInfo
+};
 
 export default logger;

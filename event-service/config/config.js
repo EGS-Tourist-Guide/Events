@@ -5,7 +5,7 @@ const config = {
         secretAccessKey: process.env.AMAZONS3_SERVICE_SECRET_ACCESS_KEY,
         region: process.env.AMAZONS3_SERVICE_REGION,
         bucket: process.env.AMAZONS3_SERVICE_BUCKET,
-        url: process.env.AMAZONS3_SERVICE_URL,
+        url: process.env.AMAZONS3_SERVICE_URL || 'http://localhost:5000',
         forcePathStyle: true
     },
     calendarService: {
@@ -21,7 +21,7 @@ const config = {
     database: {
         appName: process.env.API_NAME,
         dbName: process.env.DATABASE_NAME,
-        uri: process.env.DATABASE_URI
+        uri: process.env.DATABASE_URI || 'mongodb://localhost:27017'
     },
     server: {
         port: process.env.API_PORT || 3000,

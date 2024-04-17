@@ -18,8 +18,7 @@ const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, time
 
         return response.data;
 
-    }
-    catch (error) {
+    } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
             if (maxRetries > 0) {
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -53,8 +52,7 @@ const addEventToCalendar = async (calendarId, eventData, maxRetries = 2, retryDe
 
         return response.data;
 
-    }
-    catch (error) {
+    } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
             if (maxRetries > 0) {
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -92,8 +90,7 @@ const getEventsFromCalendar = async (calendarId, searchParams, maxRetries = 2, r
 
         return response.data;
 
-    }
-    catch (error) {
+    } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
             if (maxRetries > 0) {
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -132,8 +129,7 @@ const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries 
 
         return response.data;
 
-    }
-    catch (error) {
+    } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
             if (maxRetries > 0) {
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -165,9 +161,8 @@ const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retr
             });
 
         return response.data;
-        
-    }
-    catch (error) {
+
+    } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
             if (maxRetries > 0) {
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -187,7 +182,6 @@ const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retr
 const newAbortSignal = (timeoutMs) => {
     const abortController = new AbortController();
     setTimeout(() => abortController.abort(), timeoutMs);
-
     return abortController.signal;
 };
 

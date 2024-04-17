@@ -1,0 +1,47 @@
+services:
+  app:
+    container_name: event-service
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      - output-logs:/app/output-logs
+    networks:
+      - app-network
+    env_file:
+      - ./event-service/.env
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - './data:/data/db'
+    networks:
+      - app-network
+
+  amazons3:
+    container_name: amazons3-service
+    build:
+      context: ./fake-s3
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+    volumes:
+      - fake-s3:/app/fake-s3
+    networks:
+      - app-network
+
+volumes:
+  output-logs:
+  fake-s3:
+
+
+networks:
+  app-network:
+    driver: bridge

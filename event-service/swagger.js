@@ -1,5 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import config from '../event-service/config/config.js';
+import config from './config/config.js';
 
 // Point of Interest schema definition
 const poi = {
@@ -651,7 +651,7 @@ const swaggerDefinition = {
 // Options for the swagger specification
 const options = {
   swaggerDefinition,
-  apis: ['../event-service/routes/*.js']
+  apis: ['./routes/*.js']
 };
 
 // Generate the swagger specification

@@ -1,12 +1,18 @@
-# Node.js image
+# Get image
 FROM node:19
 
 # Metadata
 LABEL maintainer="Luis Couto 89078"
 LABEL version="1.0"
 
+# Create the app directory
+RUN mkdir /app
+
+# Create the logs directory that will be mounted as a volume
+RUN mkdir /app/output-logs
+
 # Working directory for the app
-WORKDIR /usr/src/event-service
+WORKDIR /app
 
 # Copy package.json and package-lock.json into the directory
 COPY package*.json ./
@@ -19,6 +25,9 @@ COPY . .
 
 # Expose port for the application
 EXPOSE 3000
+
+# Define the volume for the application logs
+VOLUME /app/output-logs
 
 # Define the command to run the application
 CMD [ "node", "index.js" ]

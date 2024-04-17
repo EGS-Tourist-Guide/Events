@@ -16,7 +16,7 @@ const logError = winston.createLogger({
     defaultMeta: { service: 'Event-service' },
     transports: [
         new winston.transports.DailyRotateFile({
-            filename: 'event-service/output-logs/error/error_%DATE%.log',
+            filename: 'output-logs/error/error_%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             zippedArchive: true,
             colorize: true,
@@ -39,7 +39,7 @@ const logInfo = winston.createLogger({
     defaultMeta: { service: 'Event-service' },
     transports: [
         new winston.transports.DailyRotateFile({
-            filename: 'event-service/output-logs/info/info_%DATE%.log',
+            filename: 'output-logs/info/info_%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             zippedArchive: true,
             colorize: true,

@@ -1,24 +1,13 @@
 // Create a new document in the database
-const createDocument = async (model, data, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const createDocument = async (model, data, maxRetries = 1, retryDelay = 1000) => {
     try {
-        const newDocument = model.create(data);
-
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('createDocument from ../database/operations.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([newDocument, timeoutPromise]);
-
+        const newDocument = await model.create(data);
         return newDocument;
-
-    } catch (error) {
+    }
+    catch (error) {
         if (maxRetries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return createDocument(model, data, maxRetries - 1, retryDelay + 250, timeout);
+            return createDocument(model, data, maxRetries - 1, retryDelay + 250);
         }
         else {
             throw error;
@@ -27,26 +16,15 @@ const createDocument = async (model, data, maxRetries = 2, retryDelay = 250, tim
 };
 
 // Read a single document from the database
-const readDocument = async (model, id, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const readDocument = async (model, id, maxRetries = 1, retryDelay = 1000) => {
     try {
-        const document = model.findById(id);
-
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('readDocument from ../database/operations.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([document, timeoutPromise]);
-
+        const document = await model.findById(id);
         return document;
-
-    } catch (error) {
+    }
+    catch (error) {
         if (maxRetries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return readDocument(model, id, maxRetries - 1, retryDelay + 250, timeout);
+            return readDocument(model, id, maxRetries - 1, retryDelay + 250);
         }
         else {
             throw error;
@@ -55,32 +33,21 @@ const readDocument = async (model, id, maxRetries = 2, retryDelay = 250, timeout
 };
 
 // Read all documents from the database, accepting optional query parameters
-const readAllDocuments = async (model, query = {}, limit = 25, offset = 0, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const readAllDocuments = async (model, query = {}, limit = 25, offset = 0, maxRetries = 1, retryDelay = 1000) => {
     try {
         let allDocuments;
         if (Object.keys(query).length === 0) {
-            allDocuments = model.find().limit(limit).skip(offset);
+            allDocuments = await model.find().limit(limit).skip(offset);
         }
         else {
-            allDocuments = model.find(query).limit(limit).skip(offset);
+            allDocuments = await model.find(query).limit(limit).skip(offset);
         }
-
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('readAllDocuments from ../database/operations.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([allDocuments, timeoutPromise]);
-
         return allDocuments;
-
-    } catch (error) {
+    }
+    catch (error) {
         if (maxRetries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return readAllDocuments(model, query, limit, offset, maxRetries - 1, retryDelay + 250, timeout);
+            return readAllDocuments(model, query, limit, offset, maxRetries - 1, retryDelay + 250);
         }
         else {
             throw error;
@@ -89,26 +56,15 @@ const readAllDocuments = async (model, query = {}, limit = 25, offset = 0, maxRe
 };
 
 // Update a single document in the database
-const updateDocument = async (model, id, data, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const updateDocument = async (model, id, data, maxRetries = 1, retryDelay = 1000) => {
     try {
-        const updatedDocument = model.findByIdAndUpdate(id, data, { new: true });
-
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('updateDocument from ../database/operations.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([updatedDocument, timeoutPromise]);
-
+        const updatedDocument = await model.findByIdAndUpdate(id, data, { new: true });
         return updatedDocument;
-
-    } catch (error) {
+    }
+    catch (error) {
         if (maxRetries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return updateDocument(model, id, data, maxRetries - 1, retryDelay + 250, timeout);
+            return updateDocument(model, id, data, maxRetries - 1, retryDelay + 250);
         }
         else {
             throw error;
@@ -117,26 +73,15 @@ const updateDocument = async (model, id, data, maxRetries = 2, retryDelay = 250,
 };
 
 // Delete a single document from the database
-const deleteDocument = async (model, id, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const deleteDocument = async (model, id, maxRetries = 1, retryDelay = 1000) => {
     try {
-        const deletedDocument = model.findByIdAndDelete(id);
-
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('deleteDocument from ../database/operations.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([deletedDocument, timeoutPromise]);
-
+        const deletedDocument = await model.findByIdAndDelete(id);
         return deletedDocument;
-
-    } catch (error) {
+    }
+    catch (error) {
         if (maxRetries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return deleteDocument(model, id, maxRetries - 1, retryDelay + 250, timeout);
+            return deleteDocument(model, id, maxRetries - 1, retryDelay + 250);
         }
         else {
             throw error;

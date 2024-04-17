@@ -1,39 +1,47 @@
 import config from '../config/config.js';
+import axios from 'axios';
 
 // Perform operations on points of interest. Service is GraphQL based, so only a single function with a single query is needed
-const performOperation = async (graphQLquery, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
+const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000, timeout = 7500) => {
     try {
-        const response = fetch(config.poiService.baseUrl + ':' + config.poiService.port + '/graphql', {
-            method: 'POST',
+        const response = await axios.post(config.poiService.baseUrl + ':' + config.poiService.port + '/graphql', 
+        {
+            body: JSON.stringify({ query: graphQLquery })
+        }, 
+        {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query: graphQLquery })
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
         });
 
-        // Wait for either the response or the timeout to occur
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const timeoutError = new Error('performOperation from ../services/pointOfInterest.js timed out');
-                timeoutError.code = 'ETIMEOUT';
-                reject(timeoutError);
-            }, timeout);
-        });
-        await Promise.race([response, timeoutPromise]);
-
-        const data = await response.json();
-        return data;
+        return response.data;
 
     } catch (error) {
-        if (maxRetries > 0) {
-            await new Promise(resolve => setTimeout(resolve, retryDelay));
-            return performOperation(graphQLquery, maxRetries - 1, retryDelay + 250, timeout);
-        }
+        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
+            if (maxRetries > 0) {
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                return performOperation(graphQLquery, maxRetries - 1, retryDelay + 250, timeout);
+            } 
+            else {
+                throw new Error('Maximum retries reached on performOperation');
+            }
+        } 
         else {
             throw error;
         }
     }
 };
+
+// Helper function
+const newAbortSignal = (timeoutMs) => {
+    const abortController = new AbortController();
+    setTimeout(() => abortController.abort(), timeoutMs);
+
+    return abortController.signal;
+};
+
 
 // Export
 const poiService = {

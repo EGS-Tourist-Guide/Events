@@ -7,8 +7,7 @@ import cors from 'cors';
 // Load environment variables
 const loadEnvVariables = async () => {
   try {
-    const __dirname = import.meta.dirname;
-    dotenv.config({ path: path.join(__dirname, '../event-service/.env') });
+    dotenv.config({ path: path.resolve(process.cwd(), '../event-service/.env') });
   } catch (error) {
     throw error;
   }
@@ -78,6 +77,6 @@ try {
   await configServer();
 }
 catch (error) {
-  console.log('\nAn error occurred while starting the server:\n')
+  console.log('----------------------------------------------------------------------------------\nAN ERROR OCCURRED WHILE STARTING THE SERVER:\n----------------------------------------------------------------------------------')
   console.error(error);
 }

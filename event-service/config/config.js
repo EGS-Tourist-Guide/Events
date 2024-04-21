@@ -71,7 +71,8 @@ const config = {
             'enddate',
             'about'
         ], // Required fields in the request body for POST/PUT
-        requiredPoiParams: ['name', 'latitude', 'longitude'] // Required fields in the Point of Interest structure
+        requiredPoiParams: ['name', 'latitude', 'longitude'], // Required fields in the Point of Interest structure
+        requiredFavParams: ['userid', 'calendarid', 'favoritestatus'] // Required fields in the Favorite structure
     },
 };
 

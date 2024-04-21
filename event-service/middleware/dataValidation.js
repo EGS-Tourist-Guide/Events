@@ -571,11 +571,89 @@ const isValidBody = (req, res, next) => {
     }
 };
 
+// Verify if request contains valid favorite
+const isValidFavorite = (req, res, next) => {
+    try {
+        // Check if request body is not missing or empty
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Request body is missing or empty'
+                }
+            });
+        }
+
+        // Check if required body parameters exist and are of the correct type and format
+        const requiredParameters = config.server.requiredFavParams;
+        for (const param of requiredParameters) {
+            if (!req.body[param]) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: `Request body is missing the required parameter: ${param}`
+                    }
+                });
+            }
+        }
+        if (typeof req.body.userid !== 'string' || !validator.isLength(req.body.userid.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    example: 'id12345'
+                }
+            });
+        }
+        if (typeof req.body.calendarid !== 'string' || !validator.isLength(req.body.calendarid.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <calendarid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                    example: 'id98765'
+                }
+            });
+        }
+        if (typeof req.body.favoritestatus !== 'boolean') {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'Body parameter <favoritestatus> must be a boolean',
+                    example: 'true'
+                }
+            });
+        }
+
+        // All checks passed, continue
+        next();
+
+    } catch {
+        const msg = {
+            messageID: req.logID,
+            message: error.stack
+        }
+        logger.logError.error(msg); // Write to error log file
+        return res.status(500).json({
+            error: {
+                code: '500',
+                message: 'Internal Server Error',
+                details: 'An unexpected error has occurred. Please try again later'
+            }
+        });
+    }
+};
+
 // Export
 const dataValidator = {
     isValidUUID,
     isValidQuery,
-    isValidBody
+    isValidBody,
+    isValidFavorite
 };
 
 export default dataValidator;

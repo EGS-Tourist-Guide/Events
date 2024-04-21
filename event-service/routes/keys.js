@@ -33,7 +33,7 @@ const routerKeys = express.Router();
  *                       type: string
  *                     key:
  *                       type: string
- *                     appId:
+ *                     appid:
  *                       type: string
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'

@@ -16,7 +16,7 @@ const generateKey = async (req, res) => {
         const app_id = 'app_id_' + uuidv4();
         const apiKey = {
             _id: hashedKey,
-            appId: app_id,
+            appid: app_id,
         };
 
         // Open a new database connection if it is not already open
@@ -34,7 +34,7 @@ const generateKey = async (req, res) => {
                 message: 'Created',
                 details: 'This will be the only time this key is shown. You will need it to authenticate yourself when making requests. Store it securely. If lost, a new key must be generated',
                 key: key,
-                appId: app_id
+                appid: app_id
             }
         });
 

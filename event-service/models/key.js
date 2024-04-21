@@ -8,9 +8,9 @@ const apiKeySchema = new mongoose.Schema({
         unique: true,
         immutable: true
     },
-    appId:  { type: String, required: true, unique: true, immutable: true },
+    appid:  { type: String, required: true, unique: true, immutable: true },
     active:     { type: Boolean, default: true, required: true, unique: false, immutable: false },
-    createdAt:  { type: Date, default: Date.now, required: true, unique: false, immutable: true },
+    createdat:  { type: Date, default: Date.now, required: true, unique: false, immutable: true },
 });
 
 // Create the ApiKey model

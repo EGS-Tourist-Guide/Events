@@ -381,6 +381,16 @@ const updateEvent = async (req, res) => {
                 error: {
                     code: '400',
                     message: 'Bad Request',
+                    details: 'Request body is missing the required parameter: pointofinterestid',
+                    example: 'poi12345'
+                }
+            });
+        }
+        if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
                     details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
                     example: 'poi12345'
                 }
@@ -556,28 +566,52 @@ const favoriteEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        // Check if the favoriteStatus parameter is a boolean
-        if (typeof req.body.favoriteStatus !== 'boolean') {
-            return res.status(400).json({
+        // Check if the event exists
+        const event = await dbOperation.readDocument(Event, req.params.uuid);
+        if (!event) {
+            return res.status(403).json({
                 error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <favoriteStatus> must be a boolean',
-                    example: 'true'
+                    code: '403',
+                    message: 'Forbidden',
+                    details: 'Cannot operate over a non-existing event'
+                }
+            });
+        }
+
+        // Get event details 
+        const eventToCreate = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
+        if (!eventToCreate) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
+        }
+
+        // Create event in the user calendar 
+        const calendarEvent = await calendarService.addEventToCalendar(req.params.calendarid, eventToCreate); 
+        if (!calendarEvent) {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
                 }
             });
         }
 
         // Check if user has previously favorited the event
-        const query = { eventId: req.params.uuid, userId: req.body.userId };
+        const query = { eventid: req.params.uuid, userid: req.body.userid };
         const favorite = await dbOperation.readAllDocuments(Favorite, query, 1, 0);
 
         // If he has never favorited the event, create a new favorite entry and increment the event favorites count by 1, using a transaction
         if (!favorite || favorite.length === 0) {
             const newFavorite = {
-                eventId: req.params.uuid,
-                userId: req.body.userId,
-                favoriteStatus: req.body.favoriteStatus
+                eventid: req.params.uuid,
+                userid: req.body.userid,
+                favoritestatus: req.body.favoritestatus
             };
 
             const session = await mongoose.startSession();
@@ -589,15 +623,15 @@ const favoriteEvent = async (req, res) => {
         }
         // If user has previously favorited the event, update the favorite entry and the event favorites count accordingly, using a transaction
         else {
-            const newFavorite = { favoriteStatus: req.body.favoriteStatus };
+            const newFavorite = { favoritestatus: req.body.favoritestatus };
             const session = await mongoose.startSession();
             session.startTransaction();
 
-            if (!favorite[0].favoriteStatus && req.body.favoriteStatus) {       // If favoriting the event
+            if (!favorite[0].favoritestatus && req.body.favoritestatus) {       // If favoriting the event
                 await dbOperation.updateDocument(Favorite, favorite[0]._id, newFavorite);
                 await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: 1 } });
             }
-            else if (favorite[0].favoriteStatus && !req.body.favoriteStatus) {  // If unfavoriting the event
+            else if (favorite[0].favoritestatus && !req.body.favoritestatus) {  // If unfavoriting the event
                 await dbOperation.updateDocument(Favorite, favorite[0]._id, newFavorite);
                 await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: -1 } });
             }

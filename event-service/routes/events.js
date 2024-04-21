@@ -262,7 +262,7 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *     tags:
  *       - Events
  *     summary: Add/Remove a favorite from an event
- *     description: Updates an event favorite count, increasing or decreasing the number by 1
+ *     description: Adds/Removes a favorite from an event. If adding it will add the event to the user calendar and update event favorite count. If removing it will remove the event from the user calendar and update event favorite count.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -278,14 +278,7 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               userid:
- *                 type: string
- *                 example: id12345
- *               favoriteStatus:
- *                 type: boolean
- *                 example: true
+ *             $ref: '#/components/schemas/Favorite'
  *     responses:
  *       200:
  *         description: OK
@@ -307,7 +300,7 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *       502:
  *         $ref: '#/components/responses/BadGateway_502'
  */
-routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, authValidator.isOperationAllowed, dataValidator.isValidUUID, async (req, res) => {
+routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.response, authValidator.isValidAuthKey, dataValidator.isValidUUID, dataValidator.isValidFavorite, async (req, res) => {
     await eventController.favoriteEvent(req, res);
 });
 

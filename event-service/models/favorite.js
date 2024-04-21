@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 
 // Define the Favorite schema
 const favoriteSchema = new mongoose.Schema({
-    eventId:            { type: String, required: true, unique: false, immutable: true },
-    userId:             { type: String, required: true, unique: false, immutable: true },
-    favoriteStatus:     { type: Boolean, required: true, unique: false, immutable: false }
+    eventid:            { type: String, required: true, unique: false, immutable: true },
+    userid:             { type: String, required: true, unique: false, immutable: true },
+    favoritestatus:     { type: Boolean, required: true, unique: false, immutable: false }
 });
 
 // Create the Favorite model

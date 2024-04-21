@@ -44,6 +44,30 @@ const poi = {
   ]
 };
 
+// Favorite schema definition
+const favorite = {
+  type: 'object',
+  properties: {
+    userid: {
+      type: 'string',
+      example: 'id12345'
+    },
+    calendarid: {
+      type: 'string',
+      example: 'id98765'
+    },
+    favoritestatus: {
+      type: 'boolean',
+      example: true
+    }
+  },
+  required: [
+    'userid',
+    'calendarid',
+    'favoritestatus'
+  ]
+};
+
 // Event schema definition for POST requests 
 const eventRequestPOST = {
   type: 'object',
@@ -400,7 +424,8 @@ const swaggerDefinition = {
       Event_Request_POST: eventRequestPOST,
       Event_Request_PUT: eventRequestPUT,
       Event_Response: eventResponse,
-      PointOfInterest: poi
+      PointOfInterest: poi,
+      Favorite: favorite
     },
     responses: {
       Created_201: {

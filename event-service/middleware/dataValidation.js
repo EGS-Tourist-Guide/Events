@@ -53,7 +53,7 @@ const isValidQuery = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [${allowedParameters.join(', ')}]`,
-                    example: '?limit=25&offset=0&search=Event_Name&name=Event_Name&organizer=Organizer_Name&city=City_Name&category=Sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
+                    example: '?limit=25&offset=0&name=Event_Name&organizer=Organizer_Name&location=address&category=Sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
                 }
             });
         }
@@ -81,20 +81,46 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
-                        example: 'offset=50'
+                        example: 'offset=0'
                     }
                 });
             }
         }
 
-        if (req.query.search !== null && req.query.search !== undefined) {
-            if (typeof req.query.search !== 'string' || !validator.isLength(req.query.search.trim(), { min: 1, max: 256 })) {
+        if (req.query.pointofinterestid !== null && req.query.pointofinterestid !== undefined) {
+            if (typeof req.query.pointofinterestid !== 'string' || !validator.isLength(req.query.pointofinterestid.trim(), { min: 1, max: 1024 })) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <search> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'search=Generic string'
+                        details: 'Query parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                        example: 'poi12345'
+                    }
+                });
+            }
+        }
+
+        if (req.query.calendarid !== null && req.query.calendarid !== undefined) {
+            if (typeof req.query.calendarid !== 'string' || !validator.isLength(req.query.calendarid.trim(), { min: 1, max: 1024 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <calendarid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                        example: 'poi12345'
+                    }
+                });
+            }
+        }
+
+        if (req.query.userid !== null && req.query.userid !== undefined) {
+            if (typeof req.query.userid !== 'string' || !validator.isLength(req.query.userid.trim(), { min: 1, max: 1024 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                        example: 'poi12345'
                     }
                 });
             }
@@ -126,14 +152,14 @@ const isValidQuery = (req, res, next) => {
             }
         }
 
-        if (req.query.city !== null && req.query.city !== undefined) {
-            if (typeof req.query.city !== 'string' || !validator.isLength(req.query.city.trim(), { min: 1, max: 256 })) {
+        if (req.query.location !== null && req.query.location !== undefined) {
+            if (typeof req.query.location !== 'string' || !validator.isLength(req.query.location.trim(), { min: 1, max: 2048 })) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <city> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'city=City_name'
+                        details: 'Query parameter <location> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
+                        example: 'location=address'
                     }
                 });
             }
@@ -148,6 +174,20 @@ const isValidQuery = (req, res, next) => {
                         message: 'Bad Request',
                         details: `Query parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
                         example: 'category=sports'
+                    }
+                });
+            }
+        }
+
+        if (req.query.maxprice !== null && req.query.maxprice !== undefined) {
+            const pattern = config.server.priceFormatQuery;
+            if (typeof req.query.maxprice !== 'string' || !pattern.test(req.query.maxprice)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <maxPrice> must be a string in the correct format',
+                        example: 'maxPrice=15.50'
                     }
                 });
             }
@@ -189,20 +229,6 @@ const isValidQuery = (req, res, next) => {
                         message: 'Bad Request',
                         details: 'Query parameter <afterdate> must be a string in the RFC 3339 format',
                         example: 'afterdate=2024-12-31T23:59:59Z'
-                    }
-                });
-            }
-        }
-
-        if (req.query.maxprice !== null && req.query.maxprice !== undefined) {
-            const pattern = config.server.priceFormatQuery;
-            if (typeof req.query.maxprice !== 'string' || !pattern.test(req.query.maxprice)) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Query parameter <maxPrice> must be a string in the correct format',
-                        example: 'maxPrice=10.00'
                     }
                 });
             }

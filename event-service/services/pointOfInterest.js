@@ -5,17 +5,21 @@ import axios from 'axios';
 const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000, timeout = 7500) => {
     try {
         const response = await axios.post(config.poiService.baseUrl + ':' + config.poiService.port + '/graphql',
-            {
-                body: JSON.stringify({ query: graphQLquery })
+        {
+            query: graphQLquery,
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
-
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
+        
+        if (response.data && response.data.errors && response.data.errors.length > 0 && !response.data.errors[0].message.includes("found")) {
+            throw new Error('Error in performOperation: ' + response.data.errors[0].message);
+        }
+        
         return response.data;
 
     } catch (error) {

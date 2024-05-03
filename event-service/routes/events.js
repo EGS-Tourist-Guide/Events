@@ -74,17 +74,33 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           format: int32
  *           default: 0
  *           minimum: 0
- *       - name: search 
- *         in: query
- *         description: Generic search string (can be a partial/full match with name, organizer, and category). It has priority over all other query parameters and is case-insensitive
+ *       - name: pointofinterestid
+ *         in: query 
+ *         description: Events that will take place at this point of interest
  *         required: false
  *         schema:
  *           type: string
  *           minLength: 1
- *           maxLength: 256
+ *           maxLength: 1024
+ *       - name: calendarid
+ *         in: query 
+ *         description: Events that are currently added in this calendar
+ *         required: false
+ *         schema:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 1024
+ *       - name: userid
+ *         in: query 
+ *         description: Events created by this user
+ *         required: false
+ *         schema:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 1024
  *       - name: name
  *         in: query
- *         description: Name of the event (must be an exact match). It is case-sensitive
+ *         description: Name of the event (must be an exact match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -92,15 +108,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: organizer
  *         in: query
- *         description: Name of the event organizer (must be an exact match). It is case-sensitive
- *         required: false
- *         schema:
- *           type: string
- *           minLength: 1
- *           maxLength: 256
- *       - name: city
- *         in: query
- *         description: Name of the city where the event is taking place (must be an exact match). It is case-sensitive
+ *         description: Name of the event organizer (must be an exact match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -108,40 +116,48 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: category
  *         in: query
- *         description: Category of the event (must be an exact match). It is case-sensitive
+ *         description: Category of the event (must be an exact match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
  *           minLength: 1
  *           maxLength: 256
+ *       - name: location
+ *         in: query
+ *         description: Location where the event is taking place. It is case-insensitive
+ *         required: false
+ *         schema:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 256
+ *       - name: maxprice
+ *         in: query
+ *         description: Maximum price of the event. It is case-insensitive
+ *         required: false
+ *         schema:
+ *           type: string
+ *           pattern: '^(\d+\.\d{2})$' 
  *       - name: startdate
  *         in: query
- *         description: Events that start at this date (must be an exact match). If applied, will delete the beforedate and afterdate query parameters should they exist. It is case-sensitive
+ *         description: Events that start at this date. If given, will make the system ignore the beforedate and/or afterdate query parameters should they exist. It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time  
  *       - name: beforedate
  *         in: query
- *         description: Events that end before or at this date (must be an exact match). It is case-sensitive
+ *         description: Events that end before or at this date. It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time
  *       - name: afterdate
  *         in: query
- *         description: Events that start at and after this date (must be an exact match). It is case-sensitive
+ *         description: Events that start at and after this date. It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time
- *       - name: maxprice
- *         in: query
- *         description: Maximum price of the event (must be an exact match). It is case-sensitive
- *         required: false
- *         schema:
- *           type: string
- *           pattern: '^(\d+\.\d{2})$' 
  *     responses:
  *       200:
  *         description: OK

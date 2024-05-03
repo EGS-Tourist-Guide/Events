@@ -24,7 +24,7 @@ RUN npm install
 COPY . .
 
 # Expose port for the application
-EXPOSE 3000
+EXPOSE 1000
 
 # Define the volume for the application logs
 VOLUME /app/output-logs

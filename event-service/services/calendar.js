@@ -5,16 +5,16 @@ import axios from 'axios';
 const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/' + userId,
-            {
+        {
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.calendarService.apikey
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': config.calendarService.apikey
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
 
         return response.data;
 
@@ -38,17 +38,17 @@ const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, time
 const addEventToCalendar = async (calendarId, eventData, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId,
-            {
-                body: JSON.stringify(eventData)
+        {
+            ...eventData
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.calendarService.apikey
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': config.calendarService.apikey
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
 
         return response.data;
 
@@ -77,16 +77,14 @@ const getEventsFromCalendar = async (calendarId, searchParams, maxRetries = 2, r
         }
 
         const response = await axios.get(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '?' + params,
-            {
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.calendarService.apikey
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': config.calendarService.apikey
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
 
         return response.data;
 
@@ -115,17 +113,17 @@ const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries 
         }
 
         const response = await axios.patch(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '/' + eventId,
-            {
-                body: JSON.stringify(eventData)
+        {
+            ...eventData
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.calendarService.apikey
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': config.calendarService.apikey
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
 
         return response.data;
 
@@ -149,16 +147,16 @@ const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries 
 const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         const response = await axios.delete(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '/' + eventId,
-            {
+        {
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.calendarService.apikey
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': config.calendarService.apikey
-                },
-                timeout: timeout,
-                signal: newAbortSignal(timeout)
-            });
+            timeout: timeout,
+            signal: newAbortSignal(timeout)
+        });
 
         return response.data;
 

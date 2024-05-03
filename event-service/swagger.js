@@ -7,7 +7,7 @@ const poi = {
   properties: {
     name: {
       type: 'string',
-      example: 'PoI Name'
+      example: 'NewPOI'
     },
     latitude: {
       type: 'number',
@@ -50,11 +50,11 @@ const favorite = {
   properties: {
     userid: {
       type: 'string',
-      example: 'id12345'
+      example: '12345'
     },
     calendarid: {
       type: 'string',
-      example: 'id98765'
+      example: '12345'
     },
     favoritestatus: {
       type: 'boolean',
@@ -74,7 +74,7 @@ const eventRequestPOST = {
   properties: {
     userid: {
       type: 'string',
-      example: 'id12345'
+      example: '12345'
     },
     name: {
       type: 'string',
@@ -150,7 +150,7 @@ const eventRequestPOST = {
     },
     pointofinterestid: {
       type: 'string',
-      example: 'poi12345'
+      example: '6615caecb656ee4cda190471'
     }
   },
   required: [
@@ -175,7 +175,7 @@ const eventRequestPUT = {
   properties: {
     userid: {
       type: 'string',
-      example: 'id12345'
+      example: '12345'
     },
     name: {
       type: 'string',
@@ -250,7 +250,7 @@ const eventRequestPUT = {
     },
     pointofinterestid: {
       type: 'string',
-      example: 'poi12345'
+      example: '6615caecb656ee4cda190471'
     }
   },
   required: [

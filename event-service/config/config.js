@@ -5,7 +5,7 @@ const config = {
         secretAccessKey: process.env.AMAZONS3_SERVICE_SECRET_ACCESS_KEY,
         region: process.env.AMAZONS3_SERVICE_REGION,
         bucket: process.env.AMAZONS3_SERVICE_BUCKET,
-        url: process.env.AMAZONS3_SERVICE_URL || 'http://localhost:5000',
+        url: process.env.AMAZONS3_SERVICE_URL,
         forcePathStyle: true
     },
     calendarService: {
@@ -21,11 +21,11 @@ const config = {
     database: {
         appName: process.env.API_NAME,
         dbName: process.env.DATABASE_NAME,
-        uri: process.env.DATABASE_URI || 'mongodb://localhost:27017'
+        uri: process.env.DATABASE_URI
     },
     server: {
-        port: process.env.API_PORT || 3000,
-        secret: process.env.API_SECRET || 'secret',
+        port: process.env.API_PORT,
+        secret: process.env.API_SECRET,
         allowedCategories: [
             'business',
             'conference',
@@ -34,23 +34,22 @@ const config = {
             'technology',
             'sports',
             'wellness',
-            'workshop'], // Allowed event categories
+            'workshop',
+            'food'], // Allowed event categories
         allowedSearchParams: [
             'limit',
             'offset',
-            'search',
+            'pointofinterestid',
+            'calendarid',
+            'userid',
             'name',
             'organizer',
-            'city',
+            'location',
             'category',
+            'maxprice',
             'startdate',
             'beforedate',
-            'afterdate',
-            'maxprice'], // Allowed query parameters
-        allowedGenericSearchParams: [
-            'name',
-            'organizer',
-            'category'], // Fields that can be searched using the <search> query parameter
+            'afterdate'], // Allowed query parameters
         allowedFileType: ['image/jpeg'], // Allowed MIME types for files
         allowedFileMaxSizeMB: 10, // Allowed maximum file size in MB
         allowedFileNumber: 1, // Allowed number of files per request

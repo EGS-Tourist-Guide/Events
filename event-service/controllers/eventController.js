@@ -23,6 +23,7 @@ const createEvent = async (req, res) => {
 
         let eventToCreate = {
             _id: newEventId,
+            organizer: req.body.organizer,
             userid: req.body.userid,
             category: req.body.category,
             contact: req.body.contact,
@@ -54,7 +55,7 @@ const createEvent = async (req, res) => {
                 error: {
                     code: '502',
                     message: 'Bad Gateway',
-                    details: 'The server got an invalid response from an upstream server',
+                    details: 'The server got an invalid response from an upstream server'
                 }
             });
         }
@@ -62,24 +63,27 @@ const createEvent = async (req, res) => {
 
         // Manage point of interest
         if (req.body.pointofinterestid !== null && req.body.pointofinterestid !== undefined) {
-            const queryString = `query findPOIs {
+            const queryString = 
+            `query findPOIs {
                 searchPointsOfInterest(
-                  apiKey: "${config.poiService.apikey}",
-                  searchInput: {
-                    _id: "${req.body.pointofinterestid}"
-                  }
-                ) {
+                    apiKey: "${config.poiService.apikey}",
+                    searchInput: {
+                        _id: "${req.body.pointofinterestid}"
+                    }
+                ) 
+                {
                     _id
-                  }
-              }`;
+                }
+            }`;
 
             const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
-            if (!poi || poi.data.searchPointsOfInterest.length === 0) {
+
+            if (!poi || !poi.data || !poi.data.searchPointsOfInterest || poi.data.searchPointsOfInterest.length === 0) {
                 return res.status(404).json({
                     error: {
                         code: '404',
                         message: 'Not Found',
-                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest',
+                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
                     }
                 });
             }
@@ -91,7 +95,7 @@ const createEvent = async (req, res) => {
                     error: {
                         code: '502',
                         message: 'Bad Gateway',
-                        details: 'The server got an invalid response from an upstream server',
+                        details: 'The server got an invalid response from an upstream server'
                     }
                 });
             }
@@ -99,43 +103,39 @@ const createEvent = async (req, res) => {
             result = await dbOperation.createDocument(Event, eventToCreate);  // Create event in event service
         }
         else {
-            let poiTocreate = {
-                name: req.body.pointofinterest.name,
-                location: {
-                    type: 'Point',
-                    coordinates: [req.body.pointofinterest.latitude, req.body.pointofinterest.longitude],
-                },
-                locationName: req.body.city + ', ' + req.body.country,
-                street: req.body.street + ' ' + req.body.doornumber,
-                postcode: req.body.postcode,
-            }
-            if (req.body.pointofinterest.category !== null && req.body.pointofinterest.category !== undefined) {
-                poiTocreate.category = req.body.pointofinterest.category;
-            }
-            if (req.body.pointofinterest.description !== null && req.body.pointofinterest.description !== undefined) {
-                poiTocreate.description = req.body.pointofinterest.description;
-            }
-            if (req.body.pointofinterest.thumbnail !== undefined && req.body.pointofinterest.thumbnail !== null) {
-                poiTocreate.thumbnail = req.body.pointofinterest.thumbnail;
-            }
-
-            const mutationString = `mutation exCreation {
+            const mutationString = 
+            `mutation exCreation {
                 createPointOfInterest(
-                  apiKey: "${config.poiService.apikey}",
-                  input: "${poiTocreate}"
-                ) {
-                    poi {
+                    apiKey: "${config.poiService.apikey}",
+                    input: {
+                        name: "${req.body.pointofinterest.name}",
+                        location: {
+                            type: "Point",
+                            coordinates: [${req.body.pointofinterest.latitude}, ${req.body.pointofinterest.longitude}]
+                        },
+                        locationName: "${req.body.city + ', ' + req.body.country}",
+                        street: "${req.body.street + ' ' + req.body.doornumber}",
+                        postcode: "${req.body.postcode}",
+                        category: "${req.body.pointofinterest.category}",
+                        description: "${req.body.pointofinterest.description}",
+                        thumbnail: "${req.body.pointofinterest.thumbnail}"
+                    }
+                ) 
+                {
+                    poi 
+                    {
                         _id
                     }
-                  }
-              }`;
+                }
+            }`;
+
             const poi = await poiService.performOperation(mutationString); // Create poi in the point of interest service
-            if (!poi) {
+            if (!poi || !poi.data || !poi.data.createPointOfInterest) {
                 return res.status(502).json({
                     error: {
                         code: '502',
                         message: 'Bad Gateway',
-                        details: 'The server got an invalid response from an upstream server',
+                        details: 'The server got an invalid response from an upstream server'
                     }
                 });
             }
@@ -147,7 +147,7 @@ const createEvent = async (req, res) => {
                     error: {
                         code: '502',
                         message: 'Bad Gateway',
-                        details: 'The server got an invalid response from an upstream server',
+                        details: 'The server got an invalid response from an upstream server'
                     }
                 });
             }
@@ -190,7 +190,7 @@ const readEvent = async (req, res) => {
                 error: {
                     code: '404',
                     message: 'Not Found',
-                    details: 'The requested resource does not exist',
+                    details: 'The requested resource does not exist'
                 }
             });
         }
@@ -202,26 +202,24 @@ const readEvent = async (req, res) => {
                 error: {
                     code: '502',
                     message: 'Bad Gateway',
-                    details: 'The server got an invalid response from an upstream server',
+                    details: 'The server got an invalid response from an upstream server'
                 }
             });
         }
-        event.name = calendarEvent[0].summary;
-        event.about = calendarEvent[0].description;
-        event.startdate = calendarEvent[0].start;
-        event.enddate = calendarEvent[0].end;
 
         // Get information from the point of interest service
-        const queryString = `query findPOIs {
+        const queryString = 
+        `query findPOIs {
             searchPointsOfInterest(
-              apiKey: "${config.poiService.apikey}",
-              searchInput: {
-                _id: "${event.pointofinterestid}"
-              }
-            ) {
+                apiKey: "${config.poiService.apikey}",
+                searchInput: {
+                    _id: "${event.pointofinterestid}"
+                }
+            ) 
+            {
                 name
                 location {
-                coordinates
+                    coordinates
                 }
                 locationName
                 street
@@ -229,23 +227,38 @@ const readEvent = async (req, res) => {
                 description
                 category
                 thumbnail
-              }
-          }`;
-
-        const poi = await poiService.performOperation(queryString); // Check if the point of interest is valid
+            }
+        }`;
+        const poi = await poiService.performOperation(queryString);
         if (!poi || poi.data.searchPointsOfInterest.length === 0) {
-            return res.status(404).json({
+            return res.status(502).json({
                 error: {
-                    code: '404',
-                    message: 'Not Found',
-                    details: 'Body parameter <pointofinterestid> does not match a valid point of interest',
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server'
                 }
             });
         }
-        event.street = poi.data.searchPointsOfInterest[0].street;
-        event.postcode = poi.data.searchPointsOfInterest[0].postcode;
-        event.location = poi.data.searchPointsOfInterest[0].locationName;
-        event.pointofinterest = {
+
+        // Return the status code and event data
+        let eventInfo = {};
+        eventInfo._id = event._id;
+        eventInfo.name = calendarEvent[0].summary;
+        eventInfo.organizer = event.organizer;
+        eventInfo.street = poi.data.searchPointsOfInterest[0].street;
+        eventInfo.postcode = poi.data.searchPointsOfInterest[0].postcode;
+        eventInfo.location = poi.data.searchPointsOfInterest[0].locationName;
+        eventInfo.category = event.category;
+        eventInfo.contact = event.contact;
+        eventInfo.startdate = calendarEvent[0].startDateTime;
+        eventInfo.enddate = calendarEvent[0].endDateTime;
+        eventInfo.about = calendarEvent[0].description;
+        eventInfo.price = event.price;
+        eventInfo.currency = event.currency;
+        eventInfo.maxparticipants = event.maxparticipants;
+        eventInfo.currentparticipants = event.currentparticipants;
+        eventInfo.favorites = event.favorites;
+        eventInfo.pointofinterest = {
             name: poi.data.searchPointsOfInterest[0].name,
             latitude: poi.data.searchPointsOfInterest[0].location.coordinates[0],
             longitude: poi.data.searchPointsOfInterest[0].location.coordinates[1],
@@ -254,14 +267,7 @@ const readEvent = async (req, res) => {
             thumbnail: poi.data.searchPointsOfInterest[0].thumbnail
         };
 
-        // Remove unnecessary fields before returning
-        delete event.userid;
-        delete event.calendarid;
-        delete event.pointofinterestid;
-        delete event.created;
-
-        // Return the status code and event data
-        return res.status(200).json(event);
+        return res.status(200).json(eventInfo);
 
     } catch (error) {
         const msg = {

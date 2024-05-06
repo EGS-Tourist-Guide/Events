@@ -25,7 +25,7 @@ const poi = {
     },
     category: {
       type: 'string',
-      example: 'PoI Category'
+      example: 'CategoryPOI'
     },
     description: {
       type: 'string',
@@ -50,11 +50,11 @@ const favorite = {
   properties: {
     userid: {
       type: 'string',
-      example: '12345'
+      example: '1'
     },
     calendarid: {
       type: 'string',
-      example: '12345'
+      example: '1'
     },
     favoritestatus: {
       type: 'boolean',
@@ -74,7 +74,7 @@ const eventRequestPOST = {
   properties: {
     userid: {
       type: 'string',
-      example: '12345'
+      example: '1'
     },
     name: {
       type: 'string',
@@ -175,7 +175,7 @@ const eventRequestPUT = {
   properties: {
     userid: {
       type: 'string',
-      example: '12345'
+      example: '1'
     },
     name: {
       type: 'string',

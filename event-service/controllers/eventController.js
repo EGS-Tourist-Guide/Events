@@ -518,16 +518,14 @@ const deleteEvent = async (req, res) => {
             await dbConnection.connect();
         }
 
-        const event = dbOperation.readDocument(req.params.uuid);
+        const event = await dbOperation.readDocument(Event, req.params.uuid);
 
-        // Delete files associated with the event from the file storage service
+        // Delete event information from all associated services
         if (event) {
-            await amazonS3.deleteFile(req.params.uuid)
-        }
 
-        // Delete the event from the calendar service
-        if (event) {
-            const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid)
+            await amazonS3.deleteFile(req.params.uuid) // Delete from file storage service
+
+            const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid) // Delete from calendar service
             if (!removed) {
                 return res.status(502).json({
                     error: {
@@ -537,11 +535,8 @@ const deleteEvent = async (req, res) => {
                     }
                 });
             }
-        }
 
-        // Delete the event from the database
-        if (event) {
-            await dbOperation.deleteDocument(Event, req.params.uuid);
+            await dbOperation.deleteDocument(Event, req.params.uuid); // Delete from the database
         }
 
         // Return the status code
@@ -566,11 +561,16 @@ const deleteEvent = async (req, res) => {
 
 // Favorite an event by its UUID
 const favoriteEvent = async (req, res) => {
+    
+    let session = false;
+
     try {
         // Open a new database connection if it is not already open
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
         }
+
+        let newEvent = {};
 
         // Check if the event exists
         const event = await dbOperation.readDocument(Event, req.params.uuid);
@@ -584,9 +584,9 @@ const favoriteEvent = async (req, res) => {
             });
         }
 
-        // Get event details 
+        // Get event details from the original calendar
         const eventToCreate = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
-        if (!eventToCreate) {
+        if (!eventToCreate || eventToCreate.length === 0) {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -596,41 +596,54 @@ const favoriteEvent = async (req, res) => {
             });
         }
 
-        // Create event in the user calendar 
-        const calendarEvent = await calendarService.addEventToCalendar(req.params.calendarid, eventToCreate); 
-        if (!calendarEvent) {
-            return res.status(502).json({
-                error: {
-                    code: '502',
-                    message: 'Bad Gateway',
-                    details: 'The server got an invalid response from an upstream server',
-                }
-            });
+        // Check if event is already in user calendar, add if it is not
+        const possibleEvent = await calendarService.getEventsFromCalendar(req.body.calendarid, { eventId: req.params.uuid });
+        if (!possibleEvent || possibleEvent.length === 0) {
+
+            newEvent.eventId = req.params.uuid;
+            newEvent.summary = eventToCreate[0].summary;
+            newEvent.location = eventToCreate[0].location;
+            newEvent.description = eventToCreate[0].description;
+            newEvent.start = eventToCreate[0].startDateTime;
+            newEvent.end = eventToCreate[0].endDateTime;
+
+            const calendarEvent = await calendarService.addEventToCalendar(req.body.calendarid, newEvent);
+            if (!calendarEvent) {
+                return res.status(502).json({
+                    error: {
+                        code: '502',
+                        message: 'Bad Gateway',
+                        details: 'The server got an invalid response from an upstream server',
+                    }
+                });
+            }
         }
 
         // Check if user has previously favorited the event
         const query = { eventid: req.params.uuid, userid: req.body.userid };
-        const favorite = await dbOperation.readAllDocuments(Favorite, query, 1, 0);
+        const favorite = await dbOperation.readAllDocuments(Favorite, query);
 
-        // If he has never favorited the event, create a new favorite entry and increment the event favorites count by 1, using a transaction
+        // If he has never favorited the event create a new favorite entry and increment the event favorites count by 1, using a transaction
         if (!favorite || favorite.length === 0) {
-            const newFavorite = {
-                eventid: req.params.uuid,
-                userid: req.body.userid,
-                favoritestatus: req.body.favoritestatus
-            };
+            if (req.body.favoritestatus) {
+                const newFavorite = {
+                    eventid: req.params.uuid,
+                    userid: req.body.userid,
+                    favoritestatus: req.body.favoritestatus
+                };
 
-            const session = await mongoose.startSession();
-            session.startTransaction();
-            await dbOperation.createDocument(Favorite, newFavorite);
-            await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: 1 } });
-            await session.commitTransaction();
-            session.endSession();
+                session = await mongoose.startSession();
+                session.startTransaction();
+                await dbOperation.createDocument(Favorite, newFavorite);
+                await dbOperation.updateDocument(Event, req.params.uuid, { $inc: { favorites: 1 } });
+                await session.commitTransaction();
+                session.endSession();
+            }
         }
         // If user has previously favorited the event, update the favorite entry and the event favorites count accordingly, using a transaction
         else {
             const newFavorite = { favoritestatus: req.body.favoritestatus };
-            const session = await mongoose.startSession();
+            session = await mongoose.startSession();
             session.startTransaction();
 
             if (!favorite[0].favoritestatus && req.body.favoritestatus) {       // If favoriting the event
@@ -649,8 +662,10 @@ const favoriteEvent = async (req, res) => {
         return res.status(200).setHeader('Location', `v1/events/${req.params.uuid}`).end();
 
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
+        if (session && session instanceof mongoose.ClientSession && session.hasActiveTransaction()) {  
+            await session.abortTransaction();
+            session.endSession();
+        }
         const msg = {
             messageID: req.logID,
             messageType: error.code,

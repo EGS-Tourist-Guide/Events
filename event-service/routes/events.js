@@ -347,7 +347,7 @@ routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.re
  *             properties:
  *               userid:
  *                 type: string
- *                 example: id12345
+ *                 example: 1
  *     responses:
  *       204:
  *         $ref: '#/components/responses/NoContent_204'

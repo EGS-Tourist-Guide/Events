@@ -39,7 +39,7 @@ const routerFiles = express.Router();
  *                 format: binary
  *               userid:
  *                 type: string
- *                 example: id12345
+ *                 example: 1
  *     responses:
  *       201:
  *         $ref: '#/components/responses/Created_201'
@@ -131,7 +131,7 @@ routerFiles.get('/files/:uuid', routeLogger.request, routeLogger.response, authV
  *             properties:
  *               userid:
  *                 type: string
- *                 example: id12345
+ *                 example: 1
  *     responses:
  *       204:
  *         $ref: '#/components/responses/NoContent_204'

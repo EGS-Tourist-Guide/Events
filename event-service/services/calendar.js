@@ -5,8 +5,7 @@ import axios from 'axios';
 const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/' + userId,
-        {
-        },
+        {},
         {
             headers: {
                 'Content-Type': 'application/json',
@@ -107,11 +106,6 @@ const getEventsFromCalendar = async (calendarId, searchParams, maxRetries = 2, r
 // Update event in calendar
 const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
-        const params = new URLSearchParams();
-        for (const key in searchParams) {
-            params.append(key, searchParams[key]);
-        }
-
         const response = await axios.patch(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '/' + eventId,
         {
             ...eventData
@@ -147,8 +141,6 @@ const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries 
 const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
         const response = await axios.delete(config.calendarService.baseUrl + ':' + config.calendarService.port + '/v1/calendars/' + calendarId + '/' + eventId,
-        {
-        },
         {
             headers: {
                 'Content-Type': 'application/json',

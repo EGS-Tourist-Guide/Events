@@ -614,7 +614,7 @@ const isValidFavorite = (req, res, next) => {
         // Check if required body parameters exist and are of the correct type and format
         const requiredParameters = config.server.requiredFavParams;
         for (const param of requiredParameters) {
-            if (!req.body[param]) {
+            if (req.body[param] === null || req.body[param] === undefined) {
                 return res.status(400).json({
                     error: {
                         code: '400',
@@ -644,6 +644,7 @@ const isValidFavorite = (req, res, next) => {
                 }
             });
         }
+
         if (typeof req.body.favoritestatus !== 'boolean') {
             return res.status(400).json({
                 error: {
@@ -658,7 +659,7 @@ const isValidFavorite = (req, res, next) => {
         // All checks passed, continue
         next();
 
-    } catch {
+    } catch (error) {
         const msg = {
             messageID: req.logID,
             message: error.stack

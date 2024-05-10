@@ -98,38 +98,36 @@ const isOperationAllowed = async (req, res, next) => {
             });
         }
 
-        // Check if the user has permission to access the resource (if he was the one that created the resource)
+        // Check if the user has permission to modify the resource (if he was the one that created it)
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
         }
 
         const event = await dbOperation.readDocument(Event, req.params.uuid);
 
-        // If the event does not exist
-        if (!event) {
-            return res.status(403).json({
+        if (event) {
+            if (event.userid !== req.body.userid) {
+                return res.status(403).json({
+                    error: {
+                        code: '403',
+                        message: 'Forbidden',
+                        details: 'You do not have permission to perform this operation'
+                    }
+                });
+            }
+            else {
+                next();
+            }
+        }
+        else {
+            return res.status(404).json({
                 error: {
-                    code: '403',
-                    message: 'Forbidden',
-                    details: 'Cannot operate over a non-existing event'
+                    code: '404',
+                    message: 'Not Found',
+                    details: 'The requested resource does not exist'
                 }
             });
         }
-
-        // If the user is not the original creator of the event
-        if (event.userid !== req.body.userid) {
-            return res.status(403).json({
-                error: {
-                    code: '403',
-                    message: 'Forbidden',
-                    details: 'You do not have permission to perform this operation'
-                }
-            });
-        }
-
-        // All checks passed, continue
-        next();
-
     } catch (error) {
         const msg = {
             messageID: req.logID,

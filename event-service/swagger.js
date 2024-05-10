@@ -7,14 +7,7 @@ const poi = {
   properties: {
     name: {
       type: 'string',
-      example: 'NewPOI'
-    },
-    latitude: {
-      type: 'number',
-      format: 'float',
-      minimum: -90,
-      maximum: 90,
-      example: 38.71667
+      example: 'POI Name'
     },
     longitude: {
       type: 'number',
@@ -23,9 +16,29 @@ const poi = {
       maximum: 180,
       example: -9.13333
     },
+    latitude: {
+      type: 'number',
+      format: 'float',
+      minimum: -90,
+      maximum: 90,
+      example: 38.71667
+    },
+    street: {
+      type: 'string',
+      example: 'Street Name N123'
+    },
+    postcode: {
+      type: 'string',
+      example: '1234-567'
+    },
+    location: {
+      type: 'string',
+      example: 'City Name, Country Name'
+    },
     category: {
       type: 'string',
-      example: 'CategoryPOI'
+      enum: config.server.allowedPoiCategories,
+      example: 'landmarks'
     },
     description: {
       type: 'string',
@@ -40,7 +53,10 @@ const poi = {
   required: [
     'name',
     'latitude',
-    'longitude'
+    'longitude',
+    'street',
+    'postcode',
+    'location',
   ]
 };
 
@@ -68,8 +84,8 @@ const favorite = {
   ]
 };
 
-// Event schema definition for POST requests 
-const eventRequestPOST = {
+// Event schema definition
+const eventRequest = {
   type: 'object',
   properties: {
     userid: {
@@ -83,26 +99,6 @@ const eventRequestPOST = {
     organizer: {
       type: 'string',
       example: 'Organizer Name'
-    },
-    street: {
-      type: 'string',
-      example: 'Street Name'
-    },
-    doornumber: {
-      type: 'string',
-      example: 'N123'
-    },
-    postcode: {
-      type: 'string',
-      example: '1234-567'
-    },
-    city: {
-      type: 'string',
-      example: 'City Name'
-    },
-    country: {
-      type: 'string',
-      example: 'Country Name'
     },
     category: {
       type: 'string',
@@ -127,147 +123,41 @@ const eventRequestPOST = {
     about: {
       type: 'string',
       example: 'This is a description of the event'
+    },
+    price: {
+      type: 'string',
+      pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
+      example: 'EUR25.55'
+    },
+    maxparticipants: {
+      type: 'integer',
+      format: 'int32',
+      minimum: 0,
+      maximum: 9999999999,
+      example: 100
+    },
+    currentparticipants: {
+      type: 'integer',
+      format: 'int32',
+      minimum: 0,
+      maximum: 9999999999,
+      example: 25
+    },
+    pointofinterestid: {
+      type: 'string',
+      example: '6615caecb656ee4cda190471'
     },
     pointofinterest: poi,
-    price: {
-      type: 'string',
-      pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
-      example: 'EUR25.55'
-    },
-    maxparticipants: {
-      type: 'integer',
-      format: 'int32',
-      minimum: 0,
-      maximum: 9999999999,
-      example: 100
-    },
-    currentparticipants: {
-      type: 'integer',
-      format: 'int32',
-      minimum: 0,
-      maximum: 9999999999,
-      example: 25
-    },
-    pointofinterestid: {
-      type: 'string',
-      example: '6615caecb656ee4cda190471'
-    }
   },
   required: [
     'userid',
     'name',
     'organizer',
-    'street',
-    'doornumber',
-    'postcode',
-    'city',
-    'country',
     'category',
     'contact',
     'startdate',
     'enddate',
     'about',
-  ]
-};
-// Event schema definition for PUT requests 
-const eventRequestPUT = {
-  type: 'object',
-  properties: {
-    userid: {
-      type: 'string',
-      example: '1'
-    },
-    name: {
-      type: 'string',
-      example: 'Event Name'
-    },
-    organizer: {
-      type: 'string',
-      example: 'Organizer Name'
-    },
-    street: {
-      type: 'string',
-      example: 'Street Name'
-    },
-    doornumber: {
-      type: 'string',
-      example: 'N123'
-    },
-    postcode: {
-      type: 'string',
-      example: '1234-567'
-    },
-    city: {
-      type: 'string',
-      example: 'City Name'
-    },
-    country: {
-      type: 'string',
-      example: 'Country Name'
-    },
-    category: {
-      type: 'string',
-      enum: config.server.allowedCategories,
-      example: 'technology'
-    },
-    contact: {
-      type: 'string',
-      format: 'email',
-      example: 'user@domain.com'
-    },
-    startdate: {
-      type: 'string',
-      format: 'date-time',
-      example: '2024-04-07T20:00:00.001Z'
-    },
-    enddate: {
-      type: 'string',
-      format: 'date-time',
-      example: '2024-04-07T22:00:00.001Z'
-    },
-    about: {
-      type: 'string',
-      example: 'This is a description of the event'
-    },
-    price: {
-      type: 'string',
-      pattern: '^(EUR|USD|GBP)\d+\.\d{2}$',
-      example: 'EUR25.55'
-    },
-    maxparticipants: {
-      type: 'integer',
-      format: 'int32',
-      minimum: 0,
-      maximum: 9999999999,
-      example: 100
-    },
-    currentparticipants: {
-      type: 'integer',
-      format: 'int32',
-      minimum: 0,
-      maximum: 9999999999,
-      example: 25
-    },
-    pointofinterestid: {
-      type: 'string',
-      example: '6615caecb656ee4cda190471'
-    }
-  },
-  required: [
-    'userid',
-    'name',
-    'organizer',
-    'street',
-    'doornumber',
-    'postcode',
-    'city',
-    'country',
-    'category',
-    'contact',
-    'startdate',
-    'enddate',
-    'about',
-    'pointofinterestid'
   ]
 };
 
@@ -287,18 +177,6 @@ const eventResponse = {
     organizer: {
       type: 'string',
       example: 'Organizer Name'
-    },
-    street: {
-      type: 'string',
-      example: 'Street Name N123'
-    },
-    postcode: {
-      type: 'string',
-      example: '1234-567'
-    },
-    location: {
-      type: 'string',
-      example: 'City Name, Country Name'
     },
     category: {
       type: 'string',
@@ -355,15 +233,16 @@ const eventResponse = {
       maximum: 9999999999,
       example: 100
     },
+    pointofinterestid: {
+      type: 'string',
+      example: '6615caecb656ee4cda190471'
+    },
     pointofinterest: poi
   },
   required: [
     '_id',
     'name',
     'organizer',
-    'street',
-    'postcode',
-    'location',
     'contact',
     'category',
     'startdate',
@@ -374,6 +253,7 @@ const eventResponse = {
     'maxparticipants',
     'currentparticipants',
     'favorites',
+    'pointofinterestid',
     'pointofinterest'
   ]
 };
@@ -421,8 +301,7 @@ const swaggerDefinition = {
       }
     },
     schemas: {
-      Event_Request_POST: eventRequestPOST,
-      Event_Request_PUT: eventRequestPUT,
+      Event_Request: eventRequest,
       Event_Response: eventResponse,
       PointOfInterest: poi,
       Favorite: favorite
@@ -536,6 +415,33 @@ const swaggerDefinition = {
       },
       NotFound_404: {
         description: 'Not Found',
+        content: {
+          'application/json': {
+            schema:
+            {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string'
+                    },
+                    message: {
+                      type: 'string'
+                    },
+                    details: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      Conflict_409: {
+        description: 'Conflict',
         content: {
           'application/json': {
             schema:

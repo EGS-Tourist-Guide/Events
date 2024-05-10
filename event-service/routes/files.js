@@ -49,6 +49,8 @@ const routerFiles = express.Router();
  *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
  *         $ref: '#/components/responses/Forbidden_403'
+ *       404:
+ *         $ref: '#/components/responses/NotFound_404'
  *       413:
  *         $ref: '#/components/responses/PayloadTooLarge_413'
  *       415:
@@ -141,6 +143,8 @@ routerFiles.get('/files/:uuid', routeLogger.request, routeLogger.response, authV
  *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
  *         $ref: '#/components/responses/Forbidden_403'
+ *       404:
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  */

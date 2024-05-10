@@ -35,7 +35,7 @@ const config = {
             'sports',
             'wellness',
             'workshop',
-            'food'], // Allowed event categories
+            'food'], // Allowed event categories    
         allowedSearchParams: [
             'limit',
             'offset',
@@ -59,18 +59,15 @@ const config = {
             'userid',
             'name',
             'organizer',
-            'street',
-            'doornumber',
-            'postcode',
-            'city',
-            'country',
             'category',
             'contact',
             'startdate',
             'enddate',
             'about'
-        ], // Required fields in the request body for POST/PUT
-        requiredPoiParams: ['name', 'latitude', 'longitude'], // Required fields in the Point of Interest structure
+        ], // Required fields in the request body
+        requiredPoiParams: ['name', 'longitude', 'latitude', 'street', 'postcode', 'location'], // Required fields in the Point of Interest structure
+        allowedPoiCategories: ['nature', 'food', 'culture', 'shopping', 'landmarks'], // Allowed Point of Interest categories
+        minimumPoiDistance: '100', // Minimum distance between two Points of Interest
         requiredFavParams: ['userid', 'calendarid', 'favoritestatus'] // Required fields in the Favorite structure
     },
 };

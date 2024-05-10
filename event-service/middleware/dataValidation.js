@@ -326,61 +326,6 @@ const isValidBody = (req, res, next) => {
             });
         }
 
-        if (typeof req.body.street !== 'string' || !validator.isLength(req.body.street.trim(), { min: 1, max: 256 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <street> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Street Name'
-                }
-            });
-        }
-
-        if (typeof req.body.doornumber !== 'string' || !validator.isLength(req.body.doornumber.trim(), { min: 1, max: 256 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <doornumber> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'N123'
-                }
-            });
-        }
-
-        if (typeof req.body.postcode !== 'string' || !validator.isLength(req.body.postcode.trim(), { min: 1, max: 256 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <postcode> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: '1234-567'
-                }
-            });
-        }
-
-        if (typeof req.body.city !== 'string' || !validator.isLength(req.body.city.trim(), { min: 1, max: 256 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <city> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'City Name'
-                }
-            });
-        }
-
-        if (typeof req.body.country !== 'string' || !validator.isLength(req.body.country.trim(), { min: 1, max: 256 })) {
-            return res.status(400).json({
-                error: {
-                    code: '400',
-                    message: 'Bad Request',
-                    details: 'Body parameter <country> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                    example: 'Country Name'
-                }
-            });
-        }
-
         if (typeof req.body.contact !== 'string' || !validator.isEmail(req.body.contact)) {
             return res.status(400).json({
                 error: {
@@ -517,16 +462,6 @@ const isValidBody = (req, res, next) => {
                         }
                     });
                 }
-                if (typeof req.body.pointofinterest.latitude !== 'number' || req.body.pointofinterest.latitude < -90 || req.body.pointofinterest.latitude > 90) {
-                    return res.status(400).json({
-                        error: {
-                            code: '400',
-                            message: 'Bad Request',
-                            details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
-                            example: '38.71667'
-                        }
-                    });
-                }
                 if (typeof req.body.pointofinterest.longitude !== 'number' || req.body.pointofinterest.longitude < -180 || req.body.pointofinterest.longitude > 180) {
                     return res.status(400).json({
                         error: {
@@ -537,20 +472,62 @@ const isValidBody = (req, res, next) => {
                         }
                     });
                 }
+                if (typeof req.body.pointofinterest.latitude !== 'number' || req.body.pointofinterest.latitude < -90 || req.body.pointofinterest.latitude > 90) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
+                            example: '38.71667'
+                        }
+                    });
+                }
+                if (typeof req.body.pointofinterest.street !== 'string' || !validator.isLength(req.body.pointofinterest.street.trim(), { min: 1, max: 512 })) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'Body parameter <street> must be a non-empty string between 1 and 512 characters long (excluding leading and trailing white spaces)',
+                            example: 'Street Name, N123'
+                        }
+                    });
+                }
+                if (typeof req.body.pointofinterest.postcode !== 'string' || !validator.isLength(req.body.pointofinterest.postcode.trim(), { min: 1, max: 256 })) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'Body parameter <postcode> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
+                            example: '1234-567'
+                        }
+                    });
+                }
+                if (typeof req.body.pointofinterest.location !== 'string' || !validator.isLength(req.body.pointofinterest.location.trim(), { min: 1, max: 512 })) {
+                    return res.status(400).json({
+                        error: {
+                            code: '400',
+                            message: 'Bad Request',
+                            details: 'Body parameter <location> must be a non-empty string between 1 and 512 characters long (excluding leading and trailing white spaces)',
+                            example: 'City Name, Country Name'
+                        }
+                    });
+                }
 
                 // Check if optional parameters, should they exist, are of the correct type and format
                 if (req.body.pointofinterest.category !== null && req.body.pointofinterest.category !== undefined) {
-                    if (typeof req.body.pointofinterest.category !== 'string' || !validator.isLength(req.body.pointofinterest.category.trim(), { min: 1, max: 256 })) {
+                    const allowedOptions = config.server.allowedPoiCategories;
+                    if (typeof req.body.pointofinterest.category !== 'string' || !validator.isIn(req.body.pointofinterest.category.toLowerCase(), allowedOptions)) {
                         return res.status(400).json({
                             error: {
                                 code: '400',
                                 message: 'Bad Request',
-                                details: 'pointofinterest parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                                example: 'PoI Category'
+                                details: `pointofinterest parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
+                                example: 'category=landmarks'
                             }
                         });
                     }
                 }
+
                 if (req.body.pointofinterest.description !== null && req.body.pointofinterest.description !== undefined) {
                     if (typeof req.body.pointofinterest.description !== 'string' || !validator.isLength(req.body.pointofinterest.description.trim(), { min: 1, max: 2048 })) {
                         return res.status(400).json({

@@ -89,13 +89,29 @@ const deleteDocument = async (model, id, maxRetries = 1, retryDelay = 1000) => {
     }
 };
 
+// Delete multiple documents from the database according to fields
+const deleteManyDocuments = async (model, fields, maxRetries = 1, retryDelay = 1000) => {
+    try {
+        const deletedDocuments = await model.deleteMany(fields);
+        return deletedDocuments;
+    } catch (error) {
+        if (maxRetries > 0) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return deleteManyDocuments(model, fields, maxRetries - 1, retryDelay + 250);
+        } else {
+            throw error;
+        }
+    }
+};
+
 // Export
 const dbOperation = {
     createDocument,
     readDocument,
     readAllDocuments,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    deleteManyDocuments
 };
 
 export default dbOperation;

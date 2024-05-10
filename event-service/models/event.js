@@ -18,7 +18,7 @@ const eventSchema = new mongoose.Schema({
     maxparticipants:        { type: Number, required: false, unique: false, immutable: false, min:0 },
     currentparticipants:    { type: Number, required: false, unique: false, immutable: false, min:0 },
     calendarid:             { type: String, required: true, unique: false, immutable: true },
-    pointofinterestid:      { type: String, required: true, unique: false, immutable: true },
+    pointofinterestid:      { type: String, required: true, unique: false, immutable: false },
     created:                { type: Date, default: Date.now, required: true, unique: false, immutable: true },
 });
 

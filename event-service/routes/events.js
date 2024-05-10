@@ -25,7 +25,7 @@ const routerEvents = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Event_Request_POST'
+ *             $ref: '#/components/schemas/Event_Request'
  *     responses:
  *       201:
  *         $ref: '#/components/responses/Created_201'
@@ -35,6 +35,8 @@ const routerEvents = express.Router();
  *         $ref: '#/components/responses/Unauthorized_401'
  *       404:
  *         $ref: '#/components/responses/NotFound_404'
+ *       409:
+ *         $ref: '#/components/responses/Conflict_409'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  *       502:
@@ -229,7 +231,7 @@ routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *     tags:
  *       - Events
  *     summary: Update an event
- *     description: Updates an event with the provided data
+ *     description: Updates an event with the provided data. At least one field from [pointofinterestid, pointofinterest] must be provided. If both are provided, pointofinterestid will be given priority and pointofinterest will be ignored. If neither is provided, the request will be rejected. If pointofinterestid is not provided but pointofinterest is, its data will be used to create a new point of interest.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -245,7 +247,7 @@ routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Event_Request_PUT'
+ *             $ref: '#/components/schemas/Event_Request'
  *     responses:
  *       200:
  *         description: OK
@@ -262,6 +264,8 @@ routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *         $ref: '#/components/responses/Forbidden_403'
  *       404:
  *         $ref: '#/components/responses/NotFound_404'
+ *       409:
+ *         $ref: '#/components/responses/Conflict_409'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  *       502:
@@ -307,8 +311,6 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *         $ref: '#/components/responses/BadRequest_400'
  *       401:
  *         $ref: '#/components/responses/Unauthorized_401'
- *       403:
- *         $ref: '#/components/responses/Forbidden_403'
  *       404:
  *         $ref: '#/components/responses/NotFound_404'
  *       500:
@@ -357,6 +359,8 @@ routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.re
  *         $ref: '#/components/responses/Unauthorized_401'
  *       403:
  *         $ref: '#/components/responses/Forbidden_403'
+ *       404:
+ *         $ref: '#/components/responses/NotFound_404'
  *       500:
  *         $ref: '#/components/responses/InternalServerError_500'
  *       502:

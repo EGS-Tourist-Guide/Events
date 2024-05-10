@@ -5,22 +5,18 @@ import axios from 'axios';
 const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000, timeout = 7500) => {
     try {
         const response = await axios.post(config.poiService.baseUrl + ':' + config.poiService.port + '/graphql',
-        {
-            query: graphQLquery,
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
+            {
+                query: graphQLquery,
             },
-            timeout: timeout,
-            signal: newAbortSignal(timeout)
-        });
-        
-        if (response.data && response.data.errors && response.data.errors.length > 0 && !response.data.errors[0].message.includes("found")) {
-            throw new Error('Error in performOperation: ' + response.data.errors[0].message);
-        }
-        
-        return response.data;
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout: timeout,
+                signal: newAbortSignal(timeout)
+            });
+
+        return processMsg(response);
 
     } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
@@ -38,13 +34,46 @@ const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000,
     }
 };
 
-// Helper function
+// Process the message received from the service
+const processMsg = (msg) => {
+    if (msg.data.errors && msg.data.errors.length > 0) {
+        const info = msg.data.errors[0].message.toString().toLowerCase();
+        if (info.includes('no points of interest found')) {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (info.includes('point of interest not found')) {
+            return 'ERR_ALREADY_DELETED';
+        }
+        else {
+            return 'ERR_GATEWAY';
+        }
+    }
+    else if (msg.data.data.createPointOfInterest) {
+        const info = msg.data.data.createPointOfInterest.message.toString().toLowerCase();
+        if (info.includes('name already exists')) {
+            return 'ERR_CONFLICT_NAME';
+        }
+        else if (info.includes('already exists within')) {
+            return 'ERR_CONFLICT_LOCATION';
+        }
+        else {
+            return msg.data.data.createPointOfInterest.poi;
+        }
+    }
+    else if (msg.data.data.searchPointsOfInterest) {
+        return msg.data.data.searchPointsOfInterest;
+    }
+    else {
+        return 'ERR_GATEWAY';
+    }
+}
+
+// Create an abort signal with a timeout
 const newAbortSignal = (timeoutMs) => {
     const abortController = new AbortController();
     setTimeout(() => abortController.abort(), timeoutMs);
     return abortController.signal;
 };
-
 
 // Export
 const poiService = {

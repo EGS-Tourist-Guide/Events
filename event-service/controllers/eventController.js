@@ -48,16 +48,7 @@ const createEvent = async (req, res) => {
                 }
             }`;
             poi = await poiService.performOperation(queryString); // Check if point of interest is valid
-            if (poi === 'ERR_NOT_FOUND') {
-                return res.status(404).json({
-                    error: {
-                        code: '404',
-                        message: 'Not Found',
-                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
-                    }
-                });
-            }
-            else if (poi === 'ERR_GATEWAY') {
+            if(!poi || poi === 'ERR_GATEWAY') {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -66,10 +57,18 @@ const createEvent = async (req, res) => {
                     }
                 });
             }
+            else if (poi === 'ERR_NOT_FOUND') {
+                return res.status(404).json({
+                    error: {
+                        code: '404',
+                        message: 'Not Found',
+                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
+                    }
+                });
+            }
             else {
                 eventToCreate.pointofinterestid = req.body.pointofinterestid;
-                calendarEventToCreate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode : '') + poi[0].locationName;
-                //calendarEventToCreate.location = poi[0].street + ', ' + poi[0].postcode + poi[0].locationName;
+                calendarEventToCreate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode + ' ' : '') + poi[0].locationName;
             }
         }
         else {
@@ -110,7 +109,7 @@ const createEvent = async (req, res) => {
                 }
             }`;
             poi = await poiService.performOperation(mutationString); // Create the point of interest
-            if (poi === 'ERR_GATEWAY') {
+            if (!poi || poi === 'ERR_GATEWAY') {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -133,20 +132,19 @@ const createEvent = async (req, res) => {
                     error: {
                         code: '409',
                         message: 'Conflict',
-                        details: `A Point of Interest already exists within ${config.server.minimumPoiDistance} meters of the one you are trying to create`
+                        details: `A Point of Interest already exists within ${config.poiService.minimumPoiDistance} meters of the one you are trying to create`
                     }
                 });
             }
             else {
                 eventToCreate.pointofinterestid = poi._id;
-                calendarEventToCreate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode : '') + poi[0].locationName;
-                //calendarEventToCreate.location = poi.street + ', ' + poi.postcode + poi.locationName;
+                calendarEventToCreate.location = (poi.street ? poi.street + ', ' : '') + (poi.postcode ? poi.postcode + ' ' : '') + poi.locationName;
             }
         }
 
         // Manage calendar
         const resultCalendar = await calendarService.createUserCalendar(req.body.userid);
-        if (!resultCalendar) {
+        if (!resultCalendar || resultCalendar === 'ERR_NOT_FOUND' || resultCalendar === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -164,7 +162,7 @@ const createEvent = async (req, res) => {
         calendarEventToCreate.start = req.body.startdate;
         calendarEventToCreate.end = req.body.enddate;
         const resultCalendarEvent = await calendarService.addEventToCalendar(eventToCreate.calendarid, calendarEventToCreate);
-        if (!resultCalendarEvent) {
+        if (!resultCalendarEvent || resultCalendar === 'ERR_NOT_FOUND' || resultCalendar === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -244,7 +242,7 @@ const readEvent = async (req, res) => {
 
         // Get information from the calendar service
         const calendarEvent = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
-        if (!calendarEvent || calendarEvent.length === 0) {
+        if (!calendarEvent || calendarEvent === 'ERR_NOT_FOUND' || calendarEvent === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -277,7 +275,7 @@ const readEvent = async (req, res) => {
             }
         }`;
         const poi = await poiService.performOperation(queryString);
-        if (poi === 'ERR_NOT_FOUND' || poi === 'ERR_GATEWAY') {
+        if (!poi || poi === 'ERR_NOT_FOUND' || poi === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -336,63 +334,202 @@ const readEvent = async (req, res) => {
 
 // Get all events, with optional filtering
 const readAllEvents = async (req, res) => {
+    let calendarId = config.server.defaultCalendarId;
+    let limit = config.server.defaultLimit;
+    let offset = config.server.defaultOffset;
+    let events;
+    let calendarEvents;
+    let pois;
+    let results = [];
     try {
         // Open a new database connection if it is not already open
         if (mongoose.connection.readyState === 0) {
             await dbConnection.connect();
         }
 
-        // Read events according to the query parameters
-        let events;
-
-        if (Object.keys(req.query).length === 0) {
-            events = await dbOperation.readAllDocuments(Event);
+        if (Object.keys(req.query).length === 0) { // If no query parameters were provided
+            events = await dbOperation.readAllDocuments(Event, {}, limit, offset);  // Read from event service
+            if(!events) {
+                return res.status(404).json({
+                    error: {
+                        code: '404',
+                        message: 'Not Found',
+                        details: 'The requested resource does not exist',
+                    }
+                });
+            }
+            calendarEvents = await calendarService.getEventsFromCalendar(calendarId);   // Read from calendar service
+            const queryString =
+                `query findPOIs {
+                searchPointsOfInterest(
+                    apiKey: "${config.poiService.apikey}",
+                    searchInput: {
+                    }
+                )
+                {
+                    _id
+                    name
+                    location {
+                        coordinates
+                    }
+                    locationName
+                    street
+                    postcode
+                    description
+                    category
+                    thumbnail
+                }
+            }`;
+            pois = await poiService.performOperation(queryString); // Read from point of interest service
         }
         else {
+            // Extract query parameters into their respective services
+            const queryEvent = Object.fromEntries(
+                Object.entries(req.query)
+                    .filter(([key]) => config.server.allowedQueryParams.includes(key))
+            );
+            const queryCalendar = Object.fromEntries(
+                Object.entries(req.query)
+                    .filter(([key]) => config.calendarService.allowedQueryParams.includes(key))
+            );
+            const queryPoi = Object.fromEntries(
+                Object.entries(req.query)
+                    .filter(([key]) => config.poiService.allowedQueryParams.includes(key))
+            );
 
-            // Extract the limit, offset, and search query parameters from the request (if they exist)
-            const { limit, offset, search, ...queryParams } = req.query;
-
-            // If the search query parameter was provided, create a regular expression to search for the value in the name, organizer, and category fields
-            const searchRegex = search ? new RegExp(search, 'i') : null;
-            const searchableFields = config.server.allowedGenericSearchParams;
-            if (search) {
-                const searchConditions = searchableFields.map(field => ({
-                    [field]: { $regex: searchRegex }
-                }));
-                queryParams.$or = searchConditions;
+            // Parse query parameters and read from the event service
+            if (queryEvent.limit !== undefined && queryEvent.limit !== null) {
+                limit = queryEvent.limit;
+                delete queryEvent.limit;
             }
+            if (queryEvent.offset !== undefined && queryEvent.offset !== null) {
+                offset = queryEvent.offset;
+                delete queryEvent.offset;
+            }
+            if (queryEvent.organizer !== undefined && queryEvent.organizer !== null) {
+                queryEvent.organizer = { $regex: queryEvent.organizer, $options: 'i' };
+            }
+            if (queryEvent.category !== undefined && queryEvent.category !== null) {
+                queryEvent.category = { $regex: queryEvent.category, $options: 'i' };
+            }
+            if (queryEvent.maxprice !== undefined && queryEvent.maxprice !== null) {
+                queryEvent.price = { $lte: queryEvent.maxprice };
+                delete queryEvent.maxprice;
+            }
+            events = await dbOperation.readAllDocuments(Event, queryEvent, limit, offset); // Read from event service
 
-            // Only when startdate query parameter was not provided can the other date query parameters be applied
-            if (queryParams.startdate === undefined) {
-                // If beforedate query parameter was provided, get all events that end at and before the beforedate
-                if (queryParams.beforedate !== undefined) {
-                    queryParams.enddate = { $lte: new Date(queryParams.beforedate) };
-                    delete queryParams.beforedate;
+            // Parse query parameters and read from the calendar service
+            if (queryCalendar.calendarid !== undefined && queryCalendar.calendarid !== null) {
+                calendarId = queryCalendar.calendarid;
+                delete queryCalendar.calendarid;
+            }
+            if (queryCalendar.startdate === null || queryCalendar.startdate === undefined) {
+                if (queryCalendar.beforedate !== null && queryCalendar.beforedate !== undefined) {
+                    queryCalendar.beforeDate = queryCalendar.beforedate;
+                    delete queryCalendar.beforedate;
                 }
-
-                // If afterdate query parameter was provided, get all events that start at and after the afterdate
-                if (queryParams.afterdate !== undefined) {
-                    queryParams.startdate = { $gte: new Date(queryParams.afterdate) };
-                    delete queryParams.afterdate;
+                if (queryCalendar.afterdate !== null && queryCalendar.afterdate !== undefined) {
+                    queryCalendar.afterDate = queryCalendar.afterdate;
+                    delete queryCalendar.afterdate;
                 }
             }
             else {
-                delete queryParams.beforedate;
-                delete queryParams.afterdate;
+                queryCalendar.startDate = queryCalendar.startdate;
+                delete queryCalendar.startdate;
+                delete queryCalendar.beforedate;
+                delete queryCalendar.afterdate;
             }
+            calendarEvents = await calendarService.getEventsFromCalendar(calendarId, queryCalendar); // Read from calendar service
 
-            // If maxprice query parameter was provided, add that condition to the query
-            if (queryParams.maxprice !== undefined) {
-                queryParams.price = { $lte: queryParams.maxprice };
-                delete queryParams.maxprice;
+            // Parse query parameters and read from the point of interest service
+            if (queryPoi.location !== null && queryPoi.location !== undefined) {
+                queryPoi.locationName = queryPoi.location;
+                delete queryPoi.location;
             }
-
-            events = await dbOperation.readAllDocuments(Event, queryParams, limit, offset);
+            if (queryPoi.radius !== null && queryPoi.radius !== undefined) {
+                queryPoi.location = {
+                    type: 'Point',
+                    coordinates: [Number.parseFloat(queryPoi.longitude), Number.parseFloat(queryPoi.latitude)]
+                };
+                queryPoi.radius = Number.parseFloat(queryPoi.radius);
+                delete queryPoi.longitude;
+                delete queryPoi.latitude;
+            }
+            const queryString =
+                `query findPOIs {
+                searchPointsOfInterest(
+                    apiKey: "${config.poiService.apikey}",
+                    searchInput: {
+                        ${buildGraphQLQuery(queryPoi)}
+                    }
+                )
+                {
+                    _id
+                    name
+                    location {
+                        coordinates
+                    }
+                    locationName
+                    street
+                    postcode
+                    description
+                    category
+                    thumbnail
+                }
+            }`;
+            pois = await poiService.performOperation(queryString); // Read from point of interest service
         }
 
-        // If the event array is empty (no events found)
-        if (events.length === 0) {
+        // Check if any of the services returned an error
+        if (!events || !calendarEvents || !pois || calendarEvents === 'ERR_GATEWAY' || pois === 'ERR_GATEWAY') {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server'
+                }
+            });
+        }
+
+        // Merge the data from all three services into a single array of objects
+        if (Array.isArray(events) && Array.isArray(calendarEvents) && Array.isArray(pois)) {
+            events.forEach(event => {
+                const calendarMatch = calendarEvents.find(calendarItem => calendarItem.eventId === event._id);
+                const poiMatch = pois.find(poiItem => poiItem._id === event.pointofinterestid);
+                if (calendarMatch && poiMatch) {
+                    results.push({
+                        _id: event._id,
+                        name: calendarMatch.summary,
+                        organizer: event.organizer,
+                        category: event.category,
+                        contact: event.contact,
+                        startdate: calendarMatch.startDateTime,
+                        enddate: calendarMatch.endDateTime,
+                        about: calendarMatch.description,
+                        price: event.price,
+                        currency: event.currency,
+                        maxparticipants: event.maxparticipants,
+                        currentparticipants: event.currentparticipants,
+                        favorites: event.favorites,
+                        pointofinterestid: event.pointofinterestid,
+                        pointofinterest: {
+                            name: poiMatch.name,
+                            longitude: poiMatch.location.coordinates[0],
+                            latitude: poiMatch.location.coordinates[1],
+                            street: poiMatch.street,
+                            postcode: poiMatch.postcode,
+                            location: poiMatch.locationName,
+                            category: poiMatch.category,
+                            description: poiMatch.description,
+                            thumbnail: poiMatch.thumbnail
+                        }
+                    });
+                }
+            });
+        }
+
+        // If the results array is empty (no events found)
+        if (results.length === 0) {
             return res.status(404).json({
                 error: {
                     code: '404',
@@ -403,7 +540,7 @@ const readAllEvents = async (req, res) => {
         }
 
         // Return the status code and event data
-        return res.status(200).json(events);
+        return res.status(200).json(results);
 
     } catch (error) {
         const msg = {
@@ -459,16 +596,7 @@ const updateEvent = async (req, res) => {
                 }
             }`;
             poi = await poiService.performOperation(queryString); // Check if point of interest is valid
-            if (poi === 'ERR_NOT_FOUND') {
-                return res.status(404).json({
-                    error: {
-                        code: '404',
-                        message: 'Not Found',
-                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
-                    }
-                });
-            }
-            else if (poi === 'ERR_GATEWAY') {
+            if (!poi || poi === 'ERR_GATEWAY') {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -477,10 +605,18 @@ const updateEvent = async (req, res) => {
                     }
                 });
             }
+            else if (poi === 'ERR_NOT_FOUND') {
+                return res.status(404).json({
+                    error: {
+                        code: '404',
+                        message: 'Not Found',
+                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
+                    }
+                });
+            }
             else {
                 eventToUpdate.pointofinterestid = req.body.pointofinterestid;
-                calendarEventToUpdate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode : '') + poi[0].locationName;
-                //calendarEventToUpdate.location = poi[0].street + ', ' + poi[0].postcode + poi[0].locationName;
+                calendarEventToUpdate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode + ' ' : '') + poi[0].locationName;
             }
         }
         else {
@@ -521,7 +657,7 @@ const updateEvent = async (req, res) => {
                 }
             }`;
             poi = await poiService.performOperation(mutationString);
-            if (poi === 'ERR_GATEWAY') {
+            if (!poi || poi === 'ERR_GATEWAY') {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -544,20 +680,19 @@ const updateEvent = async (req, res) => {
                     error: {
                         code: '409',
                         message: 'Conflict',
-                        details: `A Point of Interest already exists within ${config.server.minimumPoiDistance} meters of the one you are trying to create`
+                        details: `A Point of Interest already exists within ${config.poiService.minimumPoiDistance} meters of the one you are trying to create`
                     }
                 });
             }
             else {
                 eventToUpdate.pointofinterestid = poi._id;
-                calendarEventToUpdate.location = (poi[0].street ? poi[0].street + ', ' : '') + (poi[0].postcode ? poi[0].postcode : '') + poi[0].locationName;
-                //calendarEventToUpdate.location = poi.street + ', ' + poi.postcode + poi.locationName;
+                calendarEventToUpdate.location = (poi.street ? poi.street + ', ' : '') + (poi.postcode ? poi.postcode + ' ' : '') + poi.locationName;
             }
         }
 
         // Manage calendar
         const resultCalendar = await calendarService.createUserCalendar(req.body.userid);
-        if (!resultCalendar) {
+        if (!resultCalendar || resultCalendar === 'ERR_NOT_FOUND' || resultCalendar === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -574,7 +709,7 @@ const updateEvent = async (req, res) => {
         calendarEventToUpdate.start = req.body.startdate;
         calendarEventToUpdate.end = req.body.enddate;
         const resultCalendarEvent = await calendarService.updateEventInCalendar(eventToUpdate.calendarid, req.params.uuid, calendarEventToUpdate);
-        if (!resultCalendarEvent) {
+        if (!resultCalendarEvent || resultCalendarEvent === 'ERR_NOT_FOUND' || resultCalendarEvent === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -650,7 +785,7 @@ const deleteEvent = async (req, res) => {
             await amazonS3.deleteFile(req.params.uuid) // Delete from file storage service
 
             const removed = await calendarService.removeEventFromCalendar(event.calendarid, req.params.uuid) // Delete from calendar service
-            if (!removed) {
+            if (!removed || removed === 'ERR_GATEWAY') {
                 return res.status(502).json({
                     error: {
                         code: '502',
@@ -662,7 +797,7 @@ const deleteEvent = async (req, res) => {
 
             session = await mongoose.startSession();
             session.startTransaction();
-            await dbOperation.deleteManyDocuments(Favorite, { eventid: req.params.uuid}) // Delete favorite entries from the database
+            await dbOperation.deleteManyDocuments(Favorite, { eventid: req.params.uuid }) // Delete favorite entries from the database
             await dbOperation.deleteDocument(Event, req.params.uuid); // Delete event from the database
             await session.commitTransaction();
             session.endSession();
@@ -719,7 +854,7 @@ const favoriteEvent = async (req, res) => {
 
         // Get event details from the original calendar
         const eventToCreate = await calendarService.getEventsFromCalendar(event.calendarid, { eventId: req.params.uuid });
-        if (!eventToCreate || eventToCreate.length === 0) {
+        if (!eventToCreate || eventToCreate === 'ERR_NOT_FOUND' || eventToCreate === 'ERR_GATEWAY') {
             return res.status(502).json({
                 error: {
                     code: '502',
@@ -731,24 +866,34 @@ const favoriteEvent = async (req, res) => {
 
         // Check if event is already in user calendar, add if it is not
         const possibleEvent = await calendarService.getEventsFromCalendar(req.body.calendarid, { eventId: req.params.uuid });
-        if (!possibleEvent || possibleEvent.length === 0) {
+        if (!possibleEvent || possibleEvent === 'ERR_GATEWAY') {
+            return res.status(502).json({
+                error: {
+                    code: '502',
+                    message: 'Bad Gateway',
+                    details: 'The server got an invalid response from an upstream server',
+                }
+            });
+        }
+        else {
+            if (possibleEvent === 'ERR_NOT_FOUND') {
+                newEvent.eventId = req.params.uuid;
+                newEvent.summary = eventToCreate[0].summary;
+                newEvent.location = eventToCreate[0].location;
+                newEvent.description = eventToCreate[0].description;
+                newEvent.start = eventToCreate[0].startDateTime;
+                newEvent.end = eventToCreate[0].endDateTime;
 
-            newEvent.eventId = req.params.uuid;
-            newEvent.summary = eventToCreate[0].summary;
-            newEvent.location = eventToCreate[0].location;
-            newEvent.description = eventToCreate[0].description;
-            newEvent.start = eventToCreate[0].startDateTime;
-            newEvent.end = eventToCreate[0].endDateTime;
-
-            const calendarEvent = await calendarService.addEventToCalendar(req.body.calendarid, newEvent);
-            if (!calendarEvent) {
-                return res.status(502).json({
-                    error: {
-                        code: '502',
-                        message: 'Bad Gateway',
-                        details: 'The server got an invalid response from an upstream server',
-                    }
-                });
+                const calendarEvent = await calendarService.addEventToCalendar(req.body.calendarid, newEvent);
+                if (!calendarEvent || calendarEvent === 'ERR_NOT_FOUND' || calendarEvent === 'ERR_GATEWAY') {
+                    return res.status(502).json({
+                        error: {
+                            code: '502',
+                            message: 'Bad Gateway',
+                            details: 'The server got an invalid response from an upstream server',
+                        }
+                    });
+                }
             }
         }
 
@@ -813,6 +958,28 @@ const favoriteEvent = async (req, res) => {
             }
         });
     }
+};
+
+
+// Helper function to transform a JSON object into a valid GraphQL query string
+const buildGraphQLQuery = (obj) => {
+    let input = '';
+    for (const key in obj) {
+        const value = obj[key];
+        if (typeof value === 'object' && value !== null) {
+            if (Array.isArray(value)) {
+                input += `${key}: [${value.join(', ')}], `;
+            }
+            else {
+                input += `${key}: { ${buildGraphQLQuery(value)} }, `;
+            }
+        }
+        else {
+            input += `${key}: ${typeof value === 'string' ? `"${value}"` : value}, `;
+        }
+    }
+    input = input.replace(/,\s*$/, '');
+    return input;
 };
 
 // Export 

@@ -44,7 +44,11 @@ const isValidQuery = (req, res, next) => {
     try {
 
         // Check if invalid query parameters are present in the request
-        const allowedParameters = config.server.allowedSearchParams;
+        const allowedParameters = [
+            ...config.server.allowedQueryParams,
+            ...config.calendarService.allowedQueryParams,
+            ...config.poiService.allowedQueryParams
+        ];
         const invalidParams = Object.keys(req.query).filter(param => !allowedParameters.includes(param.toLocaleLowerCase()));
 
         if (invalidParams.length > 0) {
@@ -53,7 +57,7 @@ const isValidQuery = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [${allowedParameters.join(', ')}]`,
-                    example: '?limit=25&offset=0&name=Event_Name&organizer=Organizer_Name&location=address&category=Sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
+                    example: '?limit=25&offset=0&name=Event_Name&organizer=Organizer_Name&location=City_Name&category=sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
                 }
             });
         }
@@ -61,13 +65,13 @@ const isValidQuery = (req, res, next) => {
         // Check if valid query parameters are of the correct type and format
         if (req.query.limit !== null && req.query.limit !== undefined) {
             const limit = Number.parseInt(req.query.limit);
-            if (isNaN(limit) || !Number.isInteger(limit) || limit < 1 || limit > 50) {
+            if (isNaN(limit) || !Number.isInteger(limit) || limit < config.server.minimumLimit || limit > config.server.maximumLimit) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <limit> must be a string that represents a valid positive integer between 1 and 50',
-                        example: 'limit=25'
+                        details: `Query parameter <limit> must be a string that represents a valid positive integer between ${config.server.minimumLimit} and ${config.server.maximumLimit}`,
+                        example: `limit=${config.server.defaultLimit}`
                     }
                 });
             }
@@ -75,26 +79,13 @@ const isValidQuery = (req, res, next) => {
 
         if (req.query.offset !== null && req.query.offset !== undefined) {
             const offset = Number.parseInt(req.query.offset);
-            if (isNaN(offset) || !Number.isInteger(offset) || offset < 0) {
+            if (isNaN(offset) || !Number.isInteger(offset) || offset < config.server.minimumOffset) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
-                        example: 'offset=0'
-                    }
-                });
-            }
-        }
-
-        if (req.query.pointofinterestid !== null && req.query.pointofinterestid !== undefined) {
-            if (typeof req.query.pointofinterestid !== 'string' || !validator.isLength(req.query.pointofinterestid.trim(), { min: 1, max: 1024 })) {
-                return res.status(400).json({
-                    error: {
-                        code: '400',
-                        message: 'Bad Request',
-                        details: 'Query parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                        example: 'poi12345'
+                        example: `limit=${config.server.defaultOffset}`
                     }
                 });
             }
@@ -107,6 +98,19 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <calendarid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
+                        example: 'poi12345'
+                    }
+                });
+            }
+        }
+
+        if (req.query.pointofinterestid !== null && req.query.pointofinterestid !== undefined) {
+            if (typeof req.query.pointofinterestid !== 'string' || !validator.isLength(req.query.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
                         example: 'poi12345'
                     }
                 });
@@ -159,20 +163,19 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <location> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
-                        example: 'location=address'
+                        example: 'location=City_Name'
                     }
                 });
             }
         }
 
         if (req.query.category !== null && req.query.category !== undefined) {
-            const allowedOptions = config.server.allowedCategories;
-            if (typeof req.query.category !== 'string' || !validator.isIn(req.query.category.toLowerCase(), allowedOptions)) {
+            if (typeof req.query.category !== 'string' || !validator.isLength(req.query.category.trim(), { min: 1, max: 256 })) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: `Query parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
+                        details: 'Query parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
                         example: 'category=sports'
                     }
                 });
@@ -232,6 +235,59 @@ const isValidQuery = (req, res, next) => {
                     }
                 });
             }
+        }
+
+        if (req.query.longitude !== null && req.query.longitude !== undefined) {
+            const longitude = Number.parseFloat(req.query.longitude);
+            if (isNaN(longitude) || !Number.parseFloat(longitude) || longitude < -180 || longitude > 180) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <longitude> must be a string that represents a valid float between -180 and 180',
+                        example: 'longitude=-9.13333'
+                    }
+                });
+            }
+        }
+
+        if (req.query.latitude !== null && req.query.latitude !== undefined) {
+            const latitude = Number.parseFloat(req.query.latitude);
+            if (isNaN(latitude) || !Number.parseFloat(latitude) || latitude < -90 || latitude > 90) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Query parameter <latitude> must be a string that represents a valid float between -90 and 90',
+                        example: 'latitude=38.71667'
+                    }
+                });
+            }
+        }
+
+        if (req.query.radius !== null && req.query.radius !== undefined) {
+            const radius = Number.parseFloat(req.query.radius);
+            if (isNaN(radius) || !Number.parseFloat(radius) || radius < config.poiService.minimumPoiDistance || radius > config.poiService.maximumPoiDistance) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: `Query parameter <radius> must be a string that represents a valid positive float between ${config.poiService.minimumPoiDistance} and ${config.poiService.maximumPoiDistance} meters`,
+                        example: 'radius=250'
+                    }
+                });
+            }
+        }
+
+        // Either all or none of the location parameters are present
+        if (
+            (req.query.longitude === null || req.query.longitude === undefined) ||
+            (req.query.latitude === null || req.query.latitude === undefined) ||
+            (req.query.radius === null || req.query.radius === undefined)
+        ) {
+            delete req.query.longitude;
+            delete req.query.latitude;
+            delete req.query.radius;
         }
 
         // All checks passed, continue
@@ -371,6 +427,16 @@ const isValidBody = (req, res, next) => {
             });
         }
 
+        if ((new Date(req.body.enddate) - new Date(req.body.startdate)) < 60000) {
+            return res.status(400).json({
+                error: {
+                    code: '400',
+                    message: 'Bad Request',
+                    details: 'There must be at least 1 minute between the start and end date of the event',
+                }
+            });
+        }
+
         if (typeof req.body.about !== 'string' || !validator.isLength(req.body.about.trim(), { min: 1, max: 2048 })) {
             return res.status(400).json({
                 error: {
@@ -502,6 +568,7 @@ const isValidBody = (req, res, next) => {
                         }
                     });
                 }
+
                 if (typeof req.body.pointofinterest.location !== 'string' || !validator.isLength(req.body.pointofinterest.location.trim(), { min: 1, max: 512 })) {
                     return res.status(400).json({
                         error: {
@@ -515,7 +582,7 @@ const isValidBody = (req, res, next) => {
 
                 // Check if optional parameters, should they exist, are of the correct type and format
                 if (req.body.pointofinterest.category !== null && req.body.pointofinterest.category !== undefined) {
-                    const allowedOptions = config.server.allowedPoiCategories;
+                    const allowedOptions = config.poiService.allowedCategories;
                     if (typeof req.body.pointofinterest.category !== 'string' || !validator.isIn(req.body.pointofinterest.category.toLowerCase(), allowedOptions)) {
                         return res.status(400).json({
                             error: {

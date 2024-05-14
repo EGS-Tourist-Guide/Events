@@ -20,6 +20,9 @@ const eventSchema = new mongoose.Schema({
     calendarid:             { type: String, required: true, unique: false, immutable: true },
     pointofinterestid:      { type: String, required: true, unique: false, immutable: false },
     created:                { type: Date, default: Date.now, required: true, unique: false, immutable: true },
+},
+{
+    collection: 'events'
 });
 
 // Create the Event model

@@ -11,12 +11,34 @@ const config = {
     calendarService: {
         apikey: process.env.CALENDAR_SERVICE_KEY,
         baseUrl: process.env.CALENDAR_SERVICE_URL,
-        port: process.env.CALENDAR_SERVICE_PORT
+        port: process.env.CALENDAR_SERVICE_PORT,
+        allowedQueryParams: [
+            'calendarid',
+            'startdate',
+            'beforedate',
+            'afterdate',
+            'name'
+        ]
     },
     poiService: {
         apikey: process.env.POI_SERVICE_KEY,
         baseUrl: process.env.POI_SERVICE_URL,
-        port: process.env.POI_SERVICE_PORT
+        port: process.env.POI_SERVICE_PORT,
+        allowedCategories: [
+            'nature',
+            'food',
+            'culture',
+            'shopping',
+            'landmarks'
+        ],
+        allowedQueryParams: [
+            'location',
+            'longitude',
+            'latitude',
+            'radius'
+        ],
+        minimumPoiDistance: 100,
+        maximumPoiDistance: 50000
     },
     database: {
         appName: process.env.API_NAME,
@@ -35,21 +57,16 @@ const config = {
             'sports',
             'wellness',
             'workshop',
-            'food'], // Allowed event categories    
-        allowedSearchParams: [
+            'food'],
+        allowedQueryParams: [
             'limit',
             'offset',
             'pointofinterestid',
-            'calendarid',
             'userid',
-            'name',
             'organizer',
-            'location',
             'category',
-            'maxprice',
-            'startdate',
-            'beforedate',
-            'afterdate'], // Allowed query parameters
+            'maxprice'
+        ],
         allowedFileType: ['image/jpeg'], // Allowed MIME types for files
         allowedFileMaxSizeMB: 10, // Allowed maximum file size in MB
         allowedFileNumber: 1, // Allowed number of files per request
@@ -66,9 +83,13 @@ const config = {
             'about'
         ], // Required fields in the request body
         requiredPoiParams: ['name', 'longitude', 'latitude', 'street', 'postcode', 'location'], // Required fields in the Point of Interest structure
-        allowedPoiCategories: ['nature', 'food', 'culture', 'shopping', 'landmarks'], // Allowed Point of Interest categories
-        minimumPoiDistance: '100', // Minimum distance between two Points of Interest
-        requiredFavParams: ['userid', 'calendarid', 'favoritestatus'] // Required fields in the Favorite structure
+        requiredFavParams: ['userid', 'calendarid', 'favoritestatus'], // Required fields in the Favorite structure
+        minimumLimit: 1,
+        maximumLimit: 50,
+        defaultLimit: 25,
+        minimumOffset: 0,
+        defaultOffset: 0,
+        defaultCalendarId: '1'
     },
 };
 

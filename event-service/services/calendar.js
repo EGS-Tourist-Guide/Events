@@ -15,17 +15,22 @@ const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, time
             signal: newAbortSignal(timeout)
         });
 
-        return response.data;
+        return processRes(response);
 
     } catch (error) {
-        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
-            if (maxRetries > 0) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return createUserCalendar(userId, maxRetries - 1, retryDelay + 250, timeout);
-            }
-            else {
-                throw new Error('Maximum retries reached on createUserCalendar');
-            }
+        const err = processErr(error, maxRetries);
+        if (err === 'RETRY') {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return createUserCalendar(userId, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else if (err === 'ERR_MAX_RETRIES') {
+            throw new Error('Maximum retries reached on createUserCalendar', error);
+        }
+        else if (err === 'ERR_NOT_FOUND') {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (err === 'ERR_GATEWAY') {
+            return 'ERR_GATEWAY';
         }
         else {
             throw error;
@@ -49,17 +54,22 @@ const addEventToCalendar = async (calendarId, eventData, maxRetries = 2, retryDe
             signal: newAbortSignal(timeout)
         });
 
-        return response.data;
+        return processRes(response);
 
     } catch (error) {
-        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
-            if (maxRetries > 0) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return addEventToCalendar(calendarId, eventData, maxRetries - 1, retryDelay + 250, timeout);
-            }
-            else {
-                throw new Error('Maximum retries reached on addEventToCalendar');
-            }
+        const err = processErr(error, maxRetries);
+        if (err === 'RETRY') {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return addEventToCalendar(calendarId, eventData, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else if (err === 'ERR_MAX_RETRIES') {
+            throw new Error('Maximum retries reached on addEventToCalendar', error);
+        }
+        else if (err === 'ERR_NOT_FOUND') {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (err === 'ERR_GATEWAY') {
+            return 'ERR_GATEWAY';
         }
         else {
             throw error;
@@ -85,17 +95,22 @@ const getEventsFromCalendar = async (calendarId, searchParams, maxRetries = 2, r
             signal: newAbortSignal(timeout)
         });
 
-        return response.data;
+        return processRes(response);
 
     } catch (error) {
-        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
-            if (maxRetries > 0) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return getEventsFromCalendar(calendarId, searchParams, maxRetries - 1, retryDelay + 250, timeout);
-            }
-            else {
-                throw new Error('Maximum retries reached on getEventsFromCalendar');
-            }
+        const err = processErr(error, maxRetries);
+        if (err === 'RETRY') {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return getEventsFromCalendar(calendarId, searchParams, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else if (err === 'ERR_MAX_RETRIES') {
+            throw new Error('Maximum retries reached on getEventsFromCalendar', error);
+        }
+        else if (err === 'ERR_NOT_FOUND') {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (err === 'ERR_GATEWAY') {
+            return 'ERR_GATEWAY';
         }
         else {
             throw error;
@@ -119,17 +134,22 @@ const updateEventInCalendar = async (calendarId, eventId, eventData, maxRetries 
             signal: newAbortSignal(timeout)
         });
 
-        return response.data;
+        return processRes(response);
 
     } catch (error) {
-        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
-            if (maxRetries > 0) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return updateEventInCalendar(calendarId, eventId, eventData, maxRetries - 1, retryDelay + 250, timeout);
-            }
-            else {
-                throw new Error('Maximum retries reached on updateEventInCalendar');
-            }
+        const err = processErr(error, maxRetries);
+        if (err === 'RETRY') {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return updateEventInCalendar(calendarId, eventId, eventData, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else if (err === 'ERR_MAX_RETRIES') {
+            throw new Error('Maximum retries reached on updateEventInCalendar', error);
+        }
+        else if (err === 'ERR_NOT_FOUND') {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (err === 'ERR_GATEWAY') {
+            return 'ERR_GATEWAY';
         }
         else {
             throw error;
@@ -150,17 +170,22 @@ const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retr
             signal: newAbortSignal(timeout)
         });
 
-        return response.data;
+        return processRes(response);
 
     } catch (error) {
-        if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
-            if (maxRetries > 0) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return removeEventFromCalendar(calendarId, eventId, maxRetries - 1, retryDelay + 250, timeout);
-            }
-            else {
-                throw new Error('Maximum retries reached on removeEventFromCalendar');
-            }
+        const err = processErr(error, maxRetries);
+        if (err === 'RETRY') {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return removeEventFromCalendar(calendarId, eventId, maxRetries - 1, retryDelay + 250, timeout);
+        }
+        else if (err === 'ERR_MAX_RETRIES') {
+            throw new Error('Maximum retries reached on removeEventFromCalendar', error);
+        }
+        else if (err === 'ERR_NOT_FOUND') {
+            return 'ERR_NOT_FOUND';
+        }
+        else if (err === 'ERR_GATEWAY') {
+            return 'ERR_GATEWAY';
         }
         else {
             throw error;
@@ -168,7 +193,38 @@ const removeEventFromCalendar = async (calendarId, eventId, maxRetries = 2, retr
     }
 };
 
-// Helper function
+// Process the response received from the service
+const processRes = (res) => {
+    if (res.status === 200 || res.status === 201 || res.status === 204) {
+        return res.data;
+    }
+    else {
+        return 'ERR_GATEWAY';
+    }
+}
+
+// Process the errors received from the service and thrown by axios
+const processErr = (error, maxRetries) => {
+    if (axios.isAxiosError(error)) {
+        if (!error.response || error.code === 'ECONNABORTED') {
+            if (maxRetries > 0) {
+                return 'RETRY';
+            }
+            else {
+                return 'ERR_MAX_RETRIES';
+            }
+        }
+        else if (error.response && error.response.status === 404) {
+            return 'ERR_NOT_FOUND';
+        }
+        else {
+            return 'ERR_GATEWAY';
+        }
+    }
+    return error;
+};
+
+// Create an abort signal with a timeout
 const newAbortSignal = (timeoutMs) => {
     const abortController = new AbortController();
     setTimeout(() => abortController.abort(), timeoutMs);

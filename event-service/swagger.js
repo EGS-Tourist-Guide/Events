@@ -37,7 +37,7 @@ const poi = {
     },
     category: {
       type: 'string',
-      enum: config.server.allowedPoiCategories,
+      enum: config.poiService.allowedCategories,
       example: 'landmarks'
     },
     description: {

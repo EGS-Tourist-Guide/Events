@@ -53,7 +53,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *     tags:
  *       - Events
  *     summary: Get all events
- *     description: Fetches all events, with optional query parameters
+ *     description: Fetches all events, with optional query parameters. If not provided, calendarid with value 1 (superuser) will be used as default. For location based search, longitude, latitude and radius parameters must be provided.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -76,17 +76,17 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           format: int32
  *           default: 0
  *           minimum: 0
- *       - name: pointofinterestid
+ *       - name: calendarid
  *         in: query 
- *         description: Events that will take place at this point of interest
+ *         description: Events currently added in this calendar
  *         required: false
  *         schema:
  *           type: string
  *           minLength: 1
  *           maxLength: 1024
- *       - name: calendarid
+ *       - name: pointofinterestid
  *         in: query 
- *         description: Events that are currently added in this calendar
+ *         description: Events associated with this point of interest
  *         required: false
  *         schema:
  *           type: string
@@ -102,7 +102,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 1024
  *       - name: name
  *         in: query
- *         description: Name of the event (must be an exact match). It is case-insensitive
+ *         description: Name of the event (can be a partial/full match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -110,7 +110,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: organizer
  *         in: query
- *         description: Name of the event organizer (must be an exact match). It is case-insensitive
+ *         description: Name of the event organizer (can be a partial/full match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -118,7 +118,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: category
  *         in: query
- *         description: Category of the event (must be an exact match). It is case-insensitive
+ *         description: Category of the event (can be a partial/full match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -126,7 +126,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: location
  *         in: query
- *         description: Location where the event is taking place. It is case-insensitive
+ *         description: City/Country where the event is taking place (can be a partial/full match). It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
@@ -134,32 +134,53 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
  *           maxLength: 256
  *       - name: maxprice
  *         in: query
- *         description: Maximum price of the event. It is case-insensitive
+ *         description: Maximum price of the event, including. It is case-insensitive
  *         required: false
  *         schema:
  *           type: string
  *           pattern: '^(\d+\.\d{2})$' 
  *       - name: startdate
  *         in: query
- *         description: Events that start at this date. If given, will make the system ignore the beforedate and/or afterdate query parameters should they exist. It is case-sensitive
+ *         description: Events that start at this date (must be an exact match). If given, will make the system ignore the beforedate and/or afterdate query parameters should they exist. It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time  
  *       - name: beforedate
  *         in: query
- *         description: Events that end before or at this date. It is case-sensitive
+ *         description: Events that end before or at this date (must be an exact match). It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time
  *       - name: afterdate
  *         in: query
- *         description: Events that start at and after this date. It is case-sensitive
+ *         description: Events that start at and after this date (must be an exact match). It is case-sensitive
  *         required: false
  *         schema:
  *           type: string
- *           format: date-time
+ *           format: float
+ *       - name: longitude
+ *         in: query
+ *         description: Used for location based search. Will be ignored if latitude and radius parameters are not provided
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: float
+ *       - name: latitude
+ *         in: query
+ *         description: Used for location based search. Will be ignored if longitude and radius parameters are not provided
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: float
+ *       - name: radius
+ *         in: query
+ *         description: Used for location based search (unit is meter). Will be ignored if longitude and latitude parameters are not provided
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: float
  *     responses:
  *       200:
  *         description: OK
@@ -282,7 +303,7 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *     tags:
  *       - Events
  *     summary: Add/Remove a favorite from an event
- *     description: Adds/Removes a favorite from an event. If adding it will add the event to the user calendar and update event favorite count. If removing it will remove the event from the user calendar and update event favorite count.
+ *     description: Adds/Removes a favorite from an event. When adding, it will add the event to the user calendar and update event favorite count. When removing, it will remove the event from the user calendar and update event favorite count.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:

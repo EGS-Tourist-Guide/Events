@@ -120,13 +120,18 @@ const isOperationAllowed = async (req, res, next) => {
             }
         }
         else {
-            return res.status(404).json({
-                error: {
-                    code: '404',
-                    message: 'Not Found',
-                    details: 'The requested resource does not exist'
-                }
-            });
+            if (req.method !== 'DELETE') {
+                return res.status(404).json({
+                    error: {
+                        code: '404',
+                        message: 'Not Found',
+                        details: 'The requested resource does not exist'
+                    }
+                });
+            }
+            else {
+                next();
+            }
         }
     } catch (error) {
         const msg = {

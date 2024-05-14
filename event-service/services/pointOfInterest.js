@@ -16,7 +16,7 @@ const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000,
                 signal: newAbortSignal(timeout)
             });
 
-        return processMsg(response);
+        return processRes(response);
 
     } catch (error) {
         if (axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.response === undefined)) {
@@ -34,10 +34,10 @@ const performOperation = async (graphQLquery, maxRetries = 1, retryDelay = 1000,
     }
 };
 
-// Process the message received from the service
-const processMsg = (msg) => {
-    if (msg.data.errors && msg.data.errors.length > 0) {
-        const info = msg.data.errors[0].message.toString().toLowerCase();
+// Process the response received from the service
+const processRes = (res) => {
+    if (res.data.errors && res.data.errors.length > 0) {
+        const info = res.data.errors[0].message.toString().toLowerCase();
         if (info.includes('no points of interest found')) {
             return 'ERR_NOT_FOUND';
         }
@@ -48,8 +48,8 @@ const processMsg = (msg) => {
             return 'ERR_GATEWAY';
         }
     }
-    else if (msg.data.data.createPointOfInterest) {
-        const info = msg.data.data.createPointOfInterest.message.toString().toLowerCase();
+    else if (res.data.data.createPointOfInterest) {
+        const info = res.data.data.createPointOfInterest.message.toString().toLowerCase();
         if (info.includes('name already exists')) {
             return 'ERR_CONFLICT_NAME';
         }
@@ -57,11 +57,11 @@ const processMsg = (msg) => {
             return 'ERR_CONFLICT_LOCATION';
         }
         else {
-            return msg.data.data.createPointOfInterest.poi;
+            return res.data.data.createPointOfInterest.poi;
         }
     }
-    else if (msg.data.data.searchPointsOfInterest) {
-        return msg.data.data.searchPointsOfInterest;
+    else if (res.data.data.searchPointsOfInterest) {
+        return res.data.data.searchPointsOfInterest;
     }
     else {
         return 'ERR_GATEWAY';

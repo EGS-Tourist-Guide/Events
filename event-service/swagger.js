@@ -14,14 +14,14 @@ const poi = {
       format: 'float',
       minimum: -180,
       maximum: 180,
-      example: -9.13333
+      example: 38.7610731
     },
     latitude: {
       type: 'number',
       format: 'float',
       minimum: -90,
       maximum: 90,
-      example: 38.71667
+      example: -9.1631749
     },
     street: {
       type: 'string',
@@ -145,7 +145,7 @@ const eventRequest = {
     },
     pointofinterestid: {
       type: 'string',
-      example: '6615caecb656ee4cda190471'
+      example: '5f8f4b3b9b3e6b1f3c1e4b1a'
     },
     pointofinterest: poi,
   },
@@ -235,7 +235,7 @@ const eventResponse = {
     },
     pointofinterestid: {
       type: 'string',
-      example: '6615caecb656ee4cda190471'
+      example: '5f8f4b3b9b3e6b1f3c1e4b1a'
     },
     pointofinterest: poi
   },

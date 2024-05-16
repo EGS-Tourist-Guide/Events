@@ -212,7 +212,7 @@ routerEvents.get('/events', routeLogger.request, routeLogger.response, authValid
  *     tags:
  *       - Events
  *     summary: Get an event
- *     description: Fetches a single event
+ *     description: Fetches a single event.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -252,7 +252,7 @@ routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, aut
  *     tags:
  *       - Events
  *     summary: Update an event
- *     description: Updates an event with the provided data. At least one field from [pointofinterestid, pointofinterest] must be provided. If both are provided, pointofinterestid will be given priority and pointofinterest will be ignored. If neither is provided, the request will be rejected. If pointofinterestid is not provided but pointofinterest is, its data will be used to create a new point of interest.
+ *     description: Updates an event with the provided data. At least one field from [pointofinterestid, pointofinterest] must be provided. If both are provided, pointofinterestid will be given priority and pointofinterest will be ignored. If neither is provided, the request will be rejected. If pointofinterestid is not provided but pointofinterest is, its data will be used to create a new point of interest. Can only be performed by the event creator.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -350,7 +350,7 @@ routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.re
  *     tags:
  *       - Events
  *     summary: Delete an event
- *     description: Deletes an event
+ *     description: Deletes an event. Can only be performed by the event creator.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:

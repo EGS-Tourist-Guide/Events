@@ -62,7 +62,7 @@ const createEvent = async (req, res) => {
                     error: {
                         code: '404',
                         message: 'Not Found',
-                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
+                        details: 'Body parameter <pointofinterestid> does not match an existing point of interest'
                     }
                 });
             }
@@ -494,7 +494,9 @@ const readAllEvents = async (req, res) => {
         // Merge the data from all three services into a single array of objects
         if (Array.isArray(events) && Array.isArray(calendarEvents) && Array.isArray(pois)) {
             events.forEach(event => {
-                const calendarMatch = calendarEvents.find(calendarItem => calendarItem.eventId === event._id);
+                const calendarMatch = calendarEvents.find(calendarItem => {
+                    return calendarItem.eventId === event._id && (!req.query.name || new RegExp(req.query.name, 'i').test(calendarItem.summary));
+                });
                 const poiMatch = pois.find(poiItem => poiItem._id === event.pointofinterestid);
                 if (calendarMatch && poiMatch) {
                     results.push({
@@ -580,7 +582,7 @@ const updateEvent = async (req, res) => {
                     searchInput: {
                         _id: "${req.body.pointofinterestid}"
                     }
-                ) 
+                )
                 {
                     _id
                     name
@@ -610,7 +612,7 @@ const updateEvent = async (req, res) => {
                     error: {
                         code: '404',
                         message: 'Not Found',
-                        details: 'Body parameter <pointofinterestid> does not match a valid point of interest'
+                        details: 'Body parameter <pointofinterestid> does not match an existing point of interest'
                     }
                 });
             }
@@ -637,7 +639,7 @@ const updateEvent = async (req, res) => {
                         description: "${req.body.pointofinterest.description}",
                         thumbnail: "${req.body.pointofinterest.thumbnail}"
                     }
-                ) 
+                )
                 {
                     poi 
                     {

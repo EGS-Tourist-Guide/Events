@@ -93,7 +93,7 @@ const isOperationAllowed = async (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'id12345'
+                    example: '1'
                 }
             });
         }

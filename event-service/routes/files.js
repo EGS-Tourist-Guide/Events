@@ -15,7 +15,7 @@ const routerFiles = express.Router();
  *     tags:
  *       - Files
  *     summary: Upload a file
- *     description: Uploads to the storage a file associated with a specific event
+ *     description: Uploads to the storage a file associated with a specific event. Can only be performed by the event creator.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -69,7 +69,7 @@ routerFiles.post('/files/:uuid', routeLogger.request, routeLogger.response, auth
  *     tags:
  *       - Files
  *     summary: Get a file
- *     description: Fetches the download URL of the file associated with a specific event
+ *     description: Fetches the download URL of the file associated with a specific event.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -113,7 +113,7 @@ routerFiles.get('/files/:uuid', routeLogger.request, routeLogger.response, authV
  *     tags:
  *       - Files
  *     summary: Delete a file
- *     description: Deletes the file associated with a specific event
+ *     description: Deletes the file associated with a specific event. Can only be performed by the event creator.
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import validator from 'validator';
 import config from '../config/config.js';
 import logger from '../logger.js';
@@ -57,7 +58,6 @@ const isValidQuery = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: `Query parameter(s) <${invalidParams.join(', ')}> is not allowed. Must be one of the following: [${allowedParameters.join(', ')}]`,
-                    example: '?limit=25&offset=0&name=Event_Name&organizer=Organizer_Name&location=City_Name&category=sports&startdate=2024-12-31T23:59:59Z&maxprice=100.00'
                 }
             });
         }
@@ -71,7 +71,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: `Query parameter <limit> must be a string that represents a valid positive integer between ${config.server.minimumLimit} and ${config.server.maximumLimit}`,
-                        example: `limit=${config.server.defaultLimit}`
+                        example: `${config.server.defaultLimit}`
                     }
                 });
             }
@@ -85,7 +85,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <offset> must be a string that represents a valid non-negative integer',
-                        example: `limit=${config.server.defaultOffset}`
+                        example: `${config.server.defaultOffset}`
                     }
                 });
             }
@@ -98,20 +98,20 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <calendarid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                        example: 'poi12345'
+                        example: '1'
                     }
                 });
             }
         }
 
         if (req.query.pointofinterestid !== null && req.query.pointofinterestid !== undefined) {
-            if (typeof req.query.pointofinterestid !== 'string' || !validator.isLength(req.query.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+            if (typeof req.query.pointofinterestid !== 'string' || !mongoose.isObjectIdOrHexString(req.query.pointofinterestid)) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Query parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                        example: 'poi12345'
+                        details: 'Query parameter <pointofinterestid> must be a 24 character hex string',
+                        example: '5f8f4b3b9b3e6b1f3c1e4b1a'
                     }
                 });
             }
@@ -124,7 +124,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                        example: 'poi12345'
+                        example: '1'
                     }
                 });
             }
@@ -137,7 +137,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'name=Event_name'
+                        example: 'Event Name'
                     }
                 });
             }
@@ -150,7 +150,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <organizer> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'organizer=Organizer_name'
+                        example: 'Organizer Name'
                     }
                 });
             }
@@ -163,7 +163,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <location> must be a non-empty string between 1 and 2048 characters long (excluding leading and trailing white spaces)',
-                        example: 'location=City_Name'
+                        example: 'City Name'
                     }
                 });
             }
@@ -176,7 +176,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <category> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                        example: 'category=sports'
+                        example: 'technology'
                     }
                 });
             }
@@ -190,7 +190,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <maxPrice> must be a string in the correct format',
-                        example: 'maxPrice=15.50'
+                        example: '25.55'
                     }
                 });
             }
@@ -204,7 +204,7 @@ const isValidQuery = (req, res, next) => {
                             code: '400',
                             message: 'Bad Request',
                             details: 'Query parameter <startDate> must be a string in the RFC 3339 format',
-                            example: 'startDate=2024-12-31T23:59:59Z'
+                            example: '2024-04-07T20:00:00.001Z'
                         }
                     });
                 }
@@ -218,7 +218,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <beforedate> must be a string in the RFC 3339 format',
-                        example: 'beforedate=2024-12-31T23:59:59Z'
+                        example: '2024-04-07T22:00:00.001Z'
                     }
                 });
             }
@@ -231,7 +231,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <afterdate> must be a string in the RFC 3339 format',
-                        example: 'afterdate=2024-12-31T23:59:59Z'
+                        example: '2024-04-07T22:00:00.001Z'
                     }
                 });
             }
@@ -245,7 +245,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <longitude> must be a string that represents a valid float between -180 and 180',
-                        example: 'longitude=-9.13333'
+                        example: '38.7610731'
                     }
                 });
             }
@@ -259,7 +259,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: 'Query parameter <latitude> must be a string that represents a valid float between -90 and 90',
-                        example: 'latitude=38.71667'
+                        example: '-9.1631749'
                     }
                 });
             }
@@ -273,7 +273,7 @@ const isValidQuery = (req, res, next) => {
                         code: '400',
                         message: 'Bad Request',
                         details: `Query parameter <radius> must be a string that represents a valid positive float between ${config.poiService.minimumPoiDistance} and ${config.poiService.maximumPoiDistance} meters`,
-                        example: 'radius=250'
+                        example: '250'
                     }
                 });
             }
@@ -355,7 +355,7 @@ const isValidBody = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'id12345'
+                    example: '1'
                 }
             });
         }
@@ -489,14 +489,26 @@ const isValidBody = (req, res, next) => {
             }
         }
 
-        if (req.body.pointofinterestid !== null && req.body.pointofinterestid !== undefined) {
-            if (typeof req.body.pointofinterestid !== 'string' || !validator.isLength(req.body.pointofinterestid.trim(), { min: 1, max: 1024 })) {
+        if (req.body.currentparticipants && req.body.maxparticipants) {
+            if (req.body.currentparticipants > req.body.maxparticipants) {
                 return res.status(400).json({
                     error: {
                         code: '400',
                         message: 'Bad Request',
-                        details: 'Body parameter <pointofinterestid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                        example: 'poi12345'
+                        details: 'The value of <currentparticipants> must be lesser or equal to <maxparticipants>',
+                    }
+                });
+            }
+        }
+
+        if (req.body.pointofinterestid !== null && req.body.pointofinterestid !== undefined) {
+            if (typeof req.body.pointofinterestid !== 'string' || !mongoose.isObjectIdOrHexString(req.body.pointofinterestid)) {
+                return res.status(400).json({
+                    error: {
+                        code: '400',
+                        message: 'Bad Request',
+                        details: 'Body parameter <pointofinterestid> must be a 24 character hex string',
+                        example: '5f8f4b3b9b3e6b1f3c1e4b1a'
                     }
                 });
             }
@@ -524,7 +536,7 @@ const isValidBody = (req, res, next) => {
                             code: '400',
                             message: 'Bad Request',
                             details: 'pointofinterest parameter <name> must be a non-empty string between 1 and 256 characters long (excluding leading and trailing white spaces)',
-                            example: 'PoI Name'
+                            example: 'POI Name'
                         }
                     });
                 }
@@ -533,8 +545,8 @@ const isValidBody = (req, res, next) => {
                         error: {
                             code: '400',
                             message: 'Bad Request',
-                            details: 'pointofinterest parameter <longitude> must be a number in the interval [-180, 180]',
-                            example: '38.71667'
+                            details: 'pointofinterest parameter <longitude> must be a valid float between -180 and 180',
+                            example: '38.7610731'
                         }
                     });
                 }
@@ -543,8 +555,8 @@ const isValidBody = (req, res, next) => {
                         error: {
                             code: '400',
                             message: 'Bad Request',
-                            details: 'pointofinterest parameter <latitude> must be a number in the interval [-90, 90]',
-                            example: '38.71667'
+                            details: 'pointofinterest parameter <latitude> must be a valid float between -90 and 90',
+                            example: '-9.1631749'
                         }
                     });
                 }
@@ -554,7 +566,7 @@ const isValidBody = (req, res, next) => {
                             code: '400',
                             message: 'Bad Request',
                             details: 'Body parameter <street> must be a non-empty string between 1 and 512 characters long (excluding leading and trailing white spaces)',
-                            example: 'Street Name, N123'
+                            example: 'Street Name N123'
                         }
                     });
                 }
@@ -589,7 +601,7 @@ const isValidBody = (req, res, next) => {
                                 code: '400',
                                 message: 'Bad Request',
                                 details: `pointofinterest parameter <category> must be a string of one of the following categories: [${allowedOptions.join(', ')}]`,
-                                example: 'category=landmarks'
+                                example: 'landmarks'
                             }
                         });
                     }
@@ -674,7 +686,7 @@ const isValidFavorite = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <userid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'id12345'
+                    example: '1'
                 }
             });
         }
@@ -684,7 +696,7 @@ const isValidFavorite = (req, res, next) => {
                     code: '400',
                     message: 'Bad Request',
                     details: 'Body parameter <calendarid> must be a non-empty string between 1 and 1024 characters long (excluding leading and trailing white spaces)',
-                    example: 'id98765'
+                    example: '1'
                 }
             });
         }

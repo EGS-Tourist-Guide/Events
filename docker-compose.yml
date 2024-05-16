@@ -7,7 +7,7 @@ services:
     ports:
       - '1000:1000'
     volumes:
-      - output-logs:/app/output-logs
+      - event-logs:/app/event-logs
     networks:
       - app-network
     env_file:
@@ -18,11 +18,12 @@ services:
 
   mongo:
     image: mongo
-    container_name: mongo
+    container_name: mongo-event
     ports:
       - '27017:27017'
     volumes:
-      - './data:/data/db'
+      - event-data:/var/lib/mongodb
+      - ./event-service/database/init-db.js:/docker-entrypoint-initdb.d/init-db.js
     networks:
       - app-network
 
@@ -39,7 +40,8 @@ services:
       - app-network
 
 volumes:
-  output-logs:
+  event-logs:
+  event-data:
   fake-s3:
 
 networks:

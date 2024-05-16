@@ -15,7 +15,7 @@ const initializeMulter = () => {
                     cb(null, true);
                 }
             },
-            limits: { fileSize: config.server.allowedFileMaxSizeMB * 1024 * 1024, files: config.server.allowedFileNumber, fieldSize: 100000}, // The maximum file size in bytes and the maximum number of files per request
+            limits: { fileSize: config.server.allowedFileMaxSizeMB * 1024 * 1024, files: config.server.allowedFileNumber, fieldSize: 1048576}, // The maximum file size in bytes and the maximum number of files per request
         }).array('file'); // The name of the file input field in the form
     }
     catch (err) {
@@ -29,7 +29,7 @@ const isValidFile = (req, res, next) => {
 
         // Check if content-type is multipart/form-data
         if (!req.headers['content-type'] || !req.headers['content-type'].includes('multipart/form-data')) {
-            return res.status(415).json({
+            return res.status(400).json({
                 error: {
                     code: '400',
                     message: 'Bad Request',
@@ -76,7 +76,7 @@ const isValidFile = (req, res, next) => {
                         error: {
                             code: '400',
                             message: 'Bad Request',
-                            details: 'The request contains text fields. Please remove them and try again'
+                            details: 'The request contains a text field too large. Maximum allowed size is 1MB'
                         }
                     });
                 }

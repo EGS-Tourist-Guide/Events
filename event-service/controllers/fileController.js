@@ -8,7 +8,7 @@ const uploadFile = async (req, res) => {
         await amazonS3.uploadFile(req.files[0], req.params.uuid);
 
         // Return the status code and the location header with the uri of the created event
-        return res.status(201).setHeader('Location', `v1/files/${req.params.uuid}`).end();
+        return res.status(201).setHeader('Location', `files/${req.params.uuid}`).end();
 
     } catch (error) {
         const msg = {

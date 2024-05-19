@@ -32,10 +32,10 @@ const configServer = async () => {
   app.use(cors());
 
   // Use swagger route
-  app.use('/v1/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+  app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   // Use service routes
-  app.use('/v1', routerKeys, routerEvents, routerFiles);
+  app.use('/', routerKeys, routerEvents, routerFiles);
 
   // Default 404 route
   app.use((req, res) => {

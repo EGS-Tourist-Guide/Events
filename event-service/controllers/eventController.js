@@ -201,7 +201,7 @@ const createEvent = async (req, res) => {
         }
 
         // Return the status code and the location header with the uri of the created event
-        return res.status(201).setHeader('Location', `v1/events/${resultEvent._id}`).end();
+        return res.status(201).setHeader('Location', `events/${resultEvent._id}`).end();
 
     } catch (error) {
         const msg = {
@@ -749,7 +749,7 @@ const updateEvent = async (req, res) => {
         }
 
         // Return the status code and the location header with the uri of the updated event
-        return res.status(200).setHeader('Location', `v1/events/${resultEvent._id}`).end();
+        return res.status(200).setHeader('Location', `events/${resultEvent._id}`).end();
 
     } catch (error) {
         const msg = {
@@ -939,7 +939,7 @@ const favoriteEvent = async (req, res) => {
         }
 
         // Return the status code and the location header with the uri of the updated event
-        return res.status(200).setHeader('Location', `v1/events/${req.params.uuid}`).end();
+        return res.status(200).setHeader('Location', `events/${req.params.uuid}`).end();
 
     } catch (error) {
         if (session && session instanceof mongoose.ClientSession && session.hasActiveTransaction()) {

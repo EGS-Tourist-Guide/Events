@@ -9,7 +9,7 @@ const routerEvents = express.Router();
 
 /**
  * @swagger
- * /events:
+ * /e1/events:
  *   post:
  *     tags:
  *       - Events
@@ -48,7 +48,7 @@ routerEvents.post('/events', routeLogger.request, routeLogger.response, authVali
 
 /**
  * @swagger
- * /events:
+ * /e1/events:
  *   get:
  *     tags:
  *       - Events
@@ -207,7 +207,7 @@ routerEvents.get('/events', routeLogger.request, routeLogger.response, authValid
 
 /**
  * @swagger
- * /events/{uuid}:
+ * /e1/events/{uuid}:
  *   get:
  *     tags:
  *       - Events
@@ -247,7 +247,7 @@ routerEvents.get('/events/:uuid', routeLogger.request, routeLogger.response, aut
 
 /**
  * @swagger
- * /events/{uuid}:
+ * /e1/events/{uuid}:
  *   put:
  *     tags:
  *       - Events
@@ -298,7 +298,7 @@ routerEvents.put('/events/:uuid', routeLogger.request, routeLogger.response, aut
 
 /**
  * @swagger
- * /events/{uuid}/favorite:
+ * /e1/events/{uuid}/favorite:
  *   patch:
  *     tags:
  *       - Events
@@ -345,7 +345,7 @@ routerEvents.patch('/events/:uuid/favorite', routeLogger.request, routeLogger.re
 
 /**
  * @swagger
- * /events/{uuid}:
+ * /e1/events/{uuid}:
  *   delete:
  *     tags:
  *       - Events

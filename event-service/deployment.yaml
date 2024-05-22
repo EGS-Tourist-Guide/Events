@@ -1,3 +1,4 @@
+####################################### MONGO #######################################
 # Persistent volume claim for mongo
 ---
 apiVersion: v1
@@ -46,7 +47,7 @@ spec:
             claimName: mongo-event
         - name: init-db-script
           configMap:
-            name: mongo-db-init
+            name: mongo-event-init
 
 # Mongo service
 ---
@@ -61,9 +62,10 @@ spec:
   ports:
     - protocol: TCP
       port: 27017
-      targetPort: 27017
+      targetPort: 27018
   clusterIP: None
 
+####################################### EVENT #######################################
 # Event configs
 ---
 apiVersion: v1
@@ -76,17 +78,17 @@ data:
   API_PORT: '1000'
   API_SECRET: 'Aq@Z%&6h9vRU/9Z5Oy!3z6`X0^M.kv'
   DATABASE_NAME: 'Event_Service'
-  DATABASE_URI: 'mongodb://mongo-event:27017/Event_Service'
+  DATABASE_URI: 'mongodb://event-mongo-service:27018/Event_Service'
   AMAZONS3_SERVICE_ACCESS_KEY_ID: 'ft}+[2b~yRqVvL%9J$B%)^c!f8MF~Y'
   AMAZONS3_SERVICE_SECRET_ACCESS_KEY: 'f+jQ9_lY(5=AR|UBPCU&E?$Xz|zeC*'
   AMAZONS3_SERVICE_REGION: 'eu-west-1'
   AMAZONS3_SERVICE_BUCKET: 'Event_Service'
-  AMAZONS3_SERVICE_URL: 'http://srv2-deti.ua.pt:80'
+  AMAZONS3_SERVICE_URL: 'amazons3-app-service:80'
   CALENDAR_SERVICE_KEY: '7d4d3351-64b9-4d0a-918c-419828a941d3'
-  CALENDAR_SERVICE_URL: 'http://srv2-deti.ua.pt'
+  CALENDAR_SERVICE_URL: 'calendar-app-service'
   CALENDAR_SERVICE_PORT: '80'
   POI_SERVICE_KEY: 'Tigas:4712b0a1d771938c04e5cba078b0a889'
-  POI_SERVICE_URL: 'http://srv2-deti.ua.pt'
+  POI_SERVICE_URL: 'poi-app-service'
   POI_SERVICE_PORT: '80'
 
 # Event deployment
@@ -108,7 +110,7 @@ spec:
     spec:
       containers:
       - name: event-service
-        image: registry.deti/egs-touristguide/event:v9
+        image: registry.deti/egs-touristguide/event:v13
         ports:
         - containerPort: 1000
         envFrom:

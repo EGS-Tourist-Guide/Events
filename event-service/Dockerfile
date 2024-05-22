@@ -5,6 +5,9 @@ FROM node:19
 LABEL maintainer="Luis Couto 89078"
 LABEL version="1.0"
 
+# Install net-tools for debugging purposes
+RUN apt update && apt install -y net-tools
+
 # Create the app directory
 RUN mkdir /app
 

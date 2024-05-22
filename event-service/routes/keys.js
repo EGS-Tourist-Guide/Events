@@ -8,7 +8,7 @@ const routerKeys = express.Router();
 
 /**
  * @swagger
- * /keys:
+ * /e1/keys:
  *   post:
  *     tags:
  *       - Keys
@@ -44,7 +44,7 @@ routerKeys.post('/keys', routeLogger.request, routeLogger.response, async (req, 
 
 /**
  * @swagger
- * /keys:
+ * /e1/keys:
  *   patch:
  *     tags:
  *       - Keys

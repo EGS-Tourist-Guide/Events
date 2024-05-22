@@ -32,10 +32,10 @@ const configServer = async () => {
   app.use(cors());
 
   // Use swagger route
-  app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+  app.use('/e1/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   // Use service routes
-  app.use('/', routerKeys, routerEvents, routerFiles);
+  app.use('/e1', routerKeys, routerEvents, routerFiles);
 
   // Default 404 route
   app.use((req, res) => {
@@ -54,8 +54,8 @@ const configServer = async () => {
     await dbConnection.connect();
     console.log('Database connection has been successfully established!');
     console.log('Starting server...');
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    var listener = app.listen(port, '0.0.0.0', () => {
+      console.log('Server listening at ' + listener.address().address +  `:${port}`);
     });
   } catch (error) {
     throw error;

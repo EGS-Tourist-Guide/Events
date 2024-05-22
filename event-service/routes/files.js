@@ -10,7 +10,7 @@ const routerFiles = express.Router();
 
 /**
  * @swagger
- * /files/{uuid}:
+ * /e1/files/{uuid}:
  *   post:
  *     tags:
  *       - Files
@@ -64,7 +64,7 @@ routerFiles.post('/files/:uuid', routeLogger.request, routeLogger.response, auth
 
 /**
  * @swagger
- * /files/{uuid}:
+ * /e1/files/{uuid}:
  *   get:
  *     tags:
  *       - Files
@@ -108,7 +108,7 @@ routerFiles.get('/files/:uuid', routeLogger.request, routeLogger.response, authV
 
 /**
  * @swagger
- * /files/{uuid}:
+ * /e1/files/{uuid}:
  *   delete:
  *     tags:
  *       - Files

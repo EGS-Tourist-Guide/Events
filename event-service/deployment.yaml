@@ -61,12 +61,10 @@ spec:
     app: mongo-event
   ports:
     - protocol: TCP
-      port: 27017
-      targetPort: 27018
-  clusterIP: None
+      port: 27018
+      targetPort: 27017
 
-####################################### EVENT #######################################
-# Event configs
+####################################### EVENTS #######################################
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -83,13 +81,13 @@ data:
   AMAZONS3_SERVICE_SECRET_ACCESS_KEY: 'f+jQ9_lY(5=AR|UBPCU&E?$Xz|zeC*'
   AMAZONS3_SERVICE_REGION: 'eu-west-1'
   AMAZONS3_SERVICE_BUCKET: 'Event_Service'
-  AMAZONS3_SERVICE_URL: 'amazons3-app-service:80'
+  AMAZONS3_SERVICE_URL: 'http://amazons3-app-service:81'
   CALENDAR_SERVICE_KEY: '7d4d3351-64b9-4d0a-918c-419828a941d3'
-  CALENDAR_SERVICE_URL: 'calendar-app-service'
-  CALENDAR_SERVICE_PORT: '80'
+  CALENDAR_SERVICE_URL: 'http://calendar-app-service'
+  CALENDAR_SERVICE_PORT: '84'
   POI_SERVICE_KEY: 'Tigas:4712b0a1d771938c04e5cba078b0a889'
-  POI_SERVICE_URL: 'poi-app-service'
-  POI_SERVICE_PORT: '80'
+  POI_SERVICE_URL: 'http://poi-app-service'
+  POI_SERVICE_PORT: '83'
 
 # Event deployment
 ---
@@ -129,6 +127,6 @@ spec:
     app: event-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 82
       targetPort: 1000
   type: LoadBalancer

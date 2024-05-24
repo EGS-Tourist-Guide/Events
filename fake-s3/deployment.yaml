@@ -30,7 +30,7 @@ metadata:
   namespace: egs-touristguide
 spec:
   ports:
-  - port: 80
+  - port: 81
     targetPort: 5000
   selector:
     app: amazons3-service

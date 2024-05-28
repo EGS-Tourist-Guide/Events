@@ -4,7 +4,7 @@ import axios from 'axios';
 // Create calendar associated to user
 const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
-        const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/' + userId,
+        const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/calendars/users/' + userId,
         {},
         {
             headers: {
@@ -41,7 +41,7 @@ const createUserCalendar = async (userId, maxRetries = 2, retryDelay = 250, time
 // Add event to calendar
 const addEventToCalendar = async (calendarId, eventData, maxRetries = 2, retryDelay = 250, timeout = 7500) => {
     try {
-        const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/calendars/' + calendarId,
+        const response = await axios.post(config.calendarService.baseUrl + ':' + config.calendarService.port + '/calendars/events/' + calendarId,
         {
             ...eventData
         },

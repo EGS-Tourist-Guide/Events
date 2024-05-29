@@ -866,7 +866,7 @@ const favoriteEvent = async (req, res) => {
             });
         }
 
-        // Check if event is already in user calendar, add if it is not
+        // Check if event is already in user calendar
         const possibleEvent = await calendarService.getEventsFromCalendar(req.body.calendarid, { eventId: req.params.uuid });
         if (!possibleEvent || possibleEvent === 'ERR_GATEWAY') {
             return res.status(502).json({
@@ -878,7 +878,7 @@ const favoriteEvent = async (req, res) => {
             });
         }
         else {
-            if (possibleEvent === 'ERR_NOT_FOUND') {
+            if (possibleEvent === 'ERR_NOT_FOUND' && req.body.favoritestatus) {
                 newEvent.eventId = req.params.uuid;
                 newEvent.summary = eventToCreate[0].summary;
                 newEvent.location = eventToCreate[0].location;
@@ -888,6 +888,18 @@ const favoriteEvent = async (req, res) => {
 
                 const calendarEvent = await calendarService.addEventToCalendar(req.body.calendarid, newEvent);
                 if (!calendarEvent || calendarEvent === 'ERR_NOT_FOUND' || calendarEvent === 'ERR_GATEWAY') {
+                    return res.status(502).json({
+                        error: {
+                            code: '502',
+                            message: 'Bad Gateway',
+                            details: 'The server got an invalid response from an upstream server',
+                        }
+                    });
+                }
+            }
+            if (possibleEvent !== 'ERR_NOT_FOUND' && !req.body.favoritestatus) {
+                const removedEvent = await calendarService.removeEventFromCalendar(req.body.calendarid, req.params.uuid);
+                if (!removedEvent || removedEvent === 'ERR_GATEWAY') {
                     return res.status(502).json({
                         error: {
                             code: '502',

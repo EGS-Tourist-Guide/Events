@@ -108,7 +108,7 @@ spec:
     spec:
       containers:
       - name: event-service
-        image: registry.deti/egs-touristguide/event:v13
+        image: registry.deti/egs-touristguide/event:v16
         ports:
         - containerPort: 1000
         envFrom:

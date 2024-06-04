@@ -367,7 +367,7 @@ spec:
     spec:
       containers:
         - name: calendar-app
-          image: registry.deti/egs-touristguide/calendar:v24
+          image: registry.deti/egs-touristguide/calendar:v25
           env:
             - name: DB_HOST
               value: "mysql-service"
